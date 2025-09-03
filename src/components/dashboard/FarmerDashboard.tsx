@@ -41,7 +41,7 @@ export default function FarmerDashboard() {
       toast({ variant: 'destructive', title: 'Wallet not connected', description: 'Please connect your wallet to register a batch.' });
       return;
     }
-    if (!user || !user.email) {
+    if (!user || !user.id || !user.email) {
        toast({ variant: 'destructive', title: 'Not logged in', description: 'You must be logged in to register a batch.' });
       return;
     }
@@ -55,7 +55,7 @@ export default function FarmerDashboard() {
       plantingDate: formData.get('plantingDate') as string,
       harvestDate: formData.get('harvestDate') as string,
       itemCount: parseInt(formData.get('itemCount') as string),
-      farmer: { id: user.id, name: user.email },
+      farmer: { id: user.id, name: user.email }, // Correctly passing user ID and email
       certificates: [],
       history: [
         {
@@ -77,6 +77,7 @@ export default function FarmerDashboard() {
         toast({
             variant: 'destructive',
             title: 'Registration Failed',
+            // Display the actual error message from the database operation
             description: error.message,
             duration: 9000
         });
