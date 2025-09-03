@@ -54,7 +54,7 @@ export async function createProduceLot(lotData: Omit<ProduceLot, 'status' | 'his
     status: 'Registered',
     timestamp: new Date().toISOString(),
     location: lotData.origin,
-    // When minting, the farmer's wallet is the actor
+    // The actor is the farmer who owns the batch.
     actor: lotData.farmer_id 
   }];
 
@@ -62,7 +62,13 @@ export async function createProduceLot(lotData: Omit<ProduceLot, 'status' | 'his
     .from('batches')
     .insert([
       {
-        ...lotData,
+        id: lotData.id,
+        farmer_id: lotData.farmer_id,
+        produce_name: lotData.produce_name,
+        origin: lotData.origin,
+        planting_date: lotData.planting_date,
+        harvest_date: lotData.harvest_date,
+        items_in_lot: lotData.items_in_lot,
         status: 'Registered',
         history: initialHistory,
       },
