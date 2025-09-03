@@ -14,16 +14,12 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Loader2, PlusCircle, BarChart, Package, Truck, QrCode, Wallet, Leaf } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useForm } from 'react-hook-form';
+import { useForm, useFormState, useFormStatus } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { motion } from 'framer-motion';
-
-// This would come from your contract's ABI
-const contractABI: any[] = []; 
-const contractAddress = "0x..."; // Your deployed contract address
 
 const produceSchema = z.object({
   produce_name: z.string().min(1, 'Produce name is required'),
@@ -41,7 +37,6 @@ export default function FarmerDashboard() {
   const router = useRouter();
   const [lots, setLots] = useState<Lot[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const { toast } = useToast();
   
@@ -82,31 +77,6 @@ export default function FarmerDashboard() {
     }
   }, [user]);
 
-  // --- MOCK BLOCKCHAIN FUNCTIONS ---
-  // Replace these with actual contract calls
-  const mockMintBatch = async (values: ProduceFormValues): Promise<string> => {
-      console.log("Simulating mintBatch transaction with data:", values);
-      toast({ title: 'Simulating Transaction', description: 'Please confirm in your wallet (simulation).'});
-      // Simulate a transaction delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      // Generate a mock UUID - in a real scenario this comes from the contract event
-      const mockBatchId = crypto.randomUUID();
-      console.log("Simulated mint successful. Batch ID:", mockBatchId);
-      toast({ title: 'Transaction Simulated', description: `Batch minted with ID: ${mockBatchId}` });
-      return mockBatchId;
-  };
-
-  const mockTransferBatch = async (batchId: string, distributorAddress: string): Promise<boolean> => {
-      console.log(`Simulating transferBatch for batch ${batchId} to ${distributorAddress}`);
-      toast({ title: 'Simulating Transaction', description: 'Please confirm transfer in wallet (simulation).'});
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      console.log("Simulated transfer successful.");
-      toast({ title: 'Transfer Simulated', description: `Batch ${batchId} transferred.` });
-      return true;
-  };
-  // --- END MOCK FUNCTIONS ---
-
-
   const onSubmit = async (values: ProduceFormValues) => {
     if (!user) {
       toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to register a batch.' });
@@ -117,11 +87,15 @@ export default function FarmerDashboard() {
       connectWallet();
       return;
     }
-    setIsSubmitting(true);
     
     try {
       // 1. Blockchain Transaction (Simulated)
-      const batchId = await mockMintBatch(values);
+      console.log("Simulating mintBatch transaction with data:", values);
+      toast({ title: 'Simulating Transaction', description: 'Please confirm in your wallet (simulation).'});
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      const batchId = crypto.randomUUID();
+      console.log("Simulated mint successful. Batch ID:", batchId);
+      toast({ title: 'Transaction Simulated', description: `Batch minted with ID: ${batchId}` });
 
       // 2. Supabase DB Insert
       const lotData = {
@@ -138,15 +112,12 @@ export default function FarmerDashboard() {
         form.reset();
         setOpenDialog(false);
       } else {
-        // This case should ideally not be hit if createProduceLot throws an error
         throw new Error('Failed to save batch details to the database.');
       }
     } catch (error) {
        console.error("Error during batch registration:", error);
        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
        toast({ variant: 'destructive', title: 'Registration Error', description: `${errorMessage}` });
-    } finally {
-      setIsSubmitting(false);
     }
   };
   
@@ -160,9 +131,12 @@ export default function FarmerDashboard() {
     try {
       // Here you would get the distributor's wallet address, e.g., from a form
       const mockDistributorAddress = "0xDISTRIBUTOR_ADDRESS...";
-
+      
       // 1. Blockchain Transaction (Simulated)
-      const success = await mockTransferBatch(lotId, mockDistributorAddress);
+      console.log(`Simulating transferBatch for batch ${lotId} to ${mockDistributorAddress}`);
+      toast({ title: 'Simulating Transaction', description: 'Please confirm transfer in wallet (simulation).'});
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      const success = true; // Mock success
       if (!success) throw new Error("Blockchain transfer failed.");
 
       // 2. Supabase DB Update
@@ -215,6 +189,8 @@ export default function FarmerDashboard() {
     },
   };
   
+  const { pending } = useFormStatus();
+
   return (
     <motion.div 
       className="bg-muted/40 min-h-screen"
@@ -248,7 +224,10 @@ export default function FarmerDashboard() {
                 </div>
               )}
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form 
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-4"
+                >
                   <FormField control={form.control} name="produce_name" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Produce Name</FormLabel>
@@ -286,8 +265,8 @@ export default function FarmerDashboard() {
                       <FormMessage />
                     </FormItem>
                   )} />
-                  <Button type="submit" disabled={isSubmitting || !walletAddress} className="w-full h-11 text-base">
-                    {isSubmitting ? <Loader2 className="animate-spin" /> : 'Register Batch'}
+                  <Button type="submit" disabled={pending || !walletAddress} className="w-full h-11 text-base">
+                    {pending ? <Loader2 className="animate-spin" /> : 'Register Batch'}
                   </Button>
                 </form>
               </Form>
@@ -393,3 +372,5 @@ export default function FarmerDashboard() {
     </motion.div>
   );
 }
+
+    
