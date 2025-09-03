@@ -49,23 +49,24 @@ export async function getLotById(lotId: string): Promise<ProduceLot | null> {
 }
 
 // Function to create a new produce lot
-export async function createProduceLot(lotData: Omit<ProduceLot, 'status' | 'history' | 'created_at'> & { items_in_lot: number }): Promise<ProduceLot | null> {
+export async function createProduceLot(lotData: {
+    id: string;
+    farmer_id: string;
+    produce_name: string;
+    origin: string;
+    planting_date: string;
+    harvest_date: string;
+    items_in_lot: number;
+}): Promise<ProduceLot | null> {
   const initialHistory = [{
     status: 'Registered',
     timestamp: new Date().toISOString(),
     location: lotData.origin,
-    // The actor is the farmer who owns the batch, identified by their user ID.
-    actor: lotData.farmer_id 
+    actor: lotData.farmer_id
   }];
 
   const payload = {
-    id: lotData.id,
-    farmer_id: lotData.farmer_id,
-    produce_name: lotData.produce_name,
-    origin: lotData.origin,
-    planting_date: lotData.planting_date,
-    harvest_date: lotData.harvest_date,
-    items_in_lot: lotData.items_in_lot,
+    ...lotData,
     status: 'Registered',
     history: initialHistory,
   };
@@ -77,7 +78,7 @@ export async function createProduceLot(lotData: Omit<ProduceLot, 'status' | 'his
     .single();
 
   if (error) {
-    console.error('Error creating produce lot:', error);
+    console.error('Error creating produce lot:', error.message);
     return null;
   }
   
