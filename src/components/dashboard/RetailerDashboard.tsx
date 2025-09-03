@@ -8,7 +8,7 @@ import type { ProduceLot, SupplyChainEvent } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowRight, CheckCircle, QrCode, ShoppingCart, Truck, Loader2 } from 'lucide-react';
+import { ArrowRight, CheckCircle, QrCode, ShoppingCart, Truck, Loader2, Store } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { Skeleton } from '../ui/skeleton';
@@ -23,20 +23,21 @@ export default function RetailerDashboard() {
   const [loading, setLoading] = useState(true);
   const [updatingLot, setUpdatingLot] = useState<string | null>(null);
 
+  const fetchLots = async () => {
+    await refreshSchemaCache();
+    const [incoming, inInventory, onSale] = await Promise.all([
+      getLotsByStatus(['In-Transit to Retailer']),
+      getLotsByStatus(['Received by Retailer']),
+      getLotsByStatus(['Available for Purchase']),
+    ]);
+    setIncomingShipments(incoming);
+    setInventory(inInventory);
+    setForSale(onSale);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const fetchLots = async () => {
-      setLoading(true);
-      await refreshSchemaCache();
-      const [incoming, inInventory, onSale] = await Promise.all([
-        getLotsByStatus(['In-Transit to Retailer']),
-        getLotsByStatus(['Received by Retailer']),
-        getLotsByStatus(['Available for Purchase']),
-      ]);
-      setIncomingShipments(incoming);
-      setInventory(inInventory);
-      setForSale(onSale);
-      setLoading(false);
-    };
+    setLoading(true);
     fetchLots();
   }, []);
 
@@ -55,20 +56,6 @@ export default function RetailerDashboard() {
         title: 'Status Updated',
         description: `Lot ${lotId} has been updated to "${newStatus}".`
       });
-      // Refetch all lots to ensure UI is consistent
-       const fetchLots = async () => {
-        setLoading(true);
-        await refreshSchemaCache();
-        const [incoming, inInventory, onSale] = await Promise.all([
-          getLotsByStatus(['In-Transit to Retailer']),
-          getLotsByStatus(['Received by Retailer']),
-          getLotsByStatus(['Available for Purchase']),
-        ]);
-        setIncomingShipments(incoming);
-        setInventory(inInventory);
-        setForSale(onSale);
-        setLoading(false);
-      };
       await fetchLots();
     } catch (error: any) {
        toast({
@@ -82,31 +69,87 @@ export default function RetailerDashboard() {
   };
 
   const getPreviousActor = (lot: ProduceLot): string => {
-    // The event before 'In-Transit to Retailer' should be 'Received by Distributor'
-    // So we find that event and get the actor.
     const transitEventIndex = lot.history.findIndex(e => e.status === 'In-Transit to Retailer');
     if (transitEventIndex > 0) {
       return lot.history[transitEventIndex - 1].actor;
     }
     return 'Distributor'; // Fallback
   }
+
+  const stats = {
+    incomingCount: incomingShipments.length,
+    stockCount: inventory.length,
+    forSaleCount: forSale.length,
+  };
+
+  if (loading) {
+    return (
+        <div className="container mx-auto py-10 px-4 space-y-8">
+            <Skeleton className="h-10 w-1/3" />
+            <div className="grid gap-4 md:grid-cols-3">
+                <Skeleton className="h-28" />
+                <Skeleton className="h-28" />
+                <Skeleton className="h-28" />
+            </div>
+            <Skeleton className="h-64" />
+            <div className="grid md:grid-cols-2 gap-8">
+                <Skeleton className="h-64" />
+                <Skeleton className="h-64" />
+            </div>
+        </div>
+    )
+  }
   
   return (
     <div className="container mx-auto py-10 px-4 space-y-8">
-      <h1 className="text-3xl font-bold font-headline">Retailer Dashboard</h1>
+      <h1 className="text-4xl font-bold font-headline tracking-tight">Retailer Dashboard</h1>
+
+      <div className="grid gap-6 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Incoming Deliveries</CardTitle>
+            <Truck className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.incomingCount}</div>
+            <p className="text-xs text-muted-foreground">batches on the way</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Batches in Stock</CardTitle>
+            <Store className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.stockCount}</div>
+            <p className="text-xs text-muted-foreground">batches awaiting placement</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Items for Sale</CardTitle>
+            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.forSaleCount}</div>
+            <p className="text-xs text-muted-foreground">batches on customer shelves</p>
+          </CardContent>
+        </Card>
+      </div>
       
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Truck /> Incoming Shipments</CardTitle>
+          <CardTitle className="flex items-center gap-2"><Truck /> Incoming Deliveries</CardTitle>
+          <CardDescription>These batches are in-transit to your store. Please verify upon receipt.</CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? <Skeleton className="h-24 w-full" /> : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Lot ID</TableHead>
                   <TableHead>From</TableHead>
                   <TableHead>Produce</TableHead>
+                  <TableHead>Items</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -116,6 +159,7 @@ export default function RetailerDashboard() {
                     <TableCell className="font-medium">{lot.id}</TableCell>
                     <TableCell>{getPreviousActor(lot)}</TableCell>
                     <TableCell>{lot.name}</TableCell>
+                    <TableCell>{lot.itemCount.toLocaleString()}</TableCell>
                     <TableCell className="text-right">
                       <Button onClick={() => handleUpdateStatus(lot.id, 'Received by Retailer')} disabled={updatingLot === lot.id}>
                          {updatingLot === lot.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
@@ -125,22 +169,21 @@ export default function RetailerDashboard() {
                   </TableRow>
                 )) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center">No incoming shipments.</TableCell>
+                    <TableCell colSpan={5} className="h-24 text-center">No incoming shipments.</TableCell>
                   </TableRow>
                 )}
               </TableBody>
             </Table>
-          )}
         </CardContent>
       </Card>
 
       <div className="grid md:grid-cols-2 gap-8">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><ShoppingCart /> Current Stock</CardTitle>
+            <CardTitle className="flex items-center gap-2"><ShoppingCart /> In-Stock Inventory</CardTitle>
+            <CardDescription>Items received but not yet available for purchase.</CardDescription>
           </CardHeader>
           <CardContent>
-             {loading ? <Skeleton className="h-24 w-full" /> : (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -164,27 +207,25 @@ export default function RetailerDashboard() {
                     </TableRow>
                   )) : (
                     <TableRow>
-                      <TableCell colSpan={3} className="text-center">No items in stock.</TableCell>
+                      <TableCell colSpan={3} className="h-24 text-center">No items in stock.</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
               </Table>
-            )}
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><QrCode /> Customer QR Codes</CardTitle>
-            <CardDescription>Display these QR codes for customers to trace their produce.</CardDescription>
+            <CardTitle className="flex items-center gap-2"><QrCode /> Ready for Purchase</CardTitle>
+            <CardDescription>Items available for customers. Click the icon to view the trace page.</CardDescription>
           </CardHeader>
           <CardContent>
-             {loading ? <Skeleton className="h-24 w-full" /> : (
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Lot ID</TableHead>
                     <TableHead>Produce</TableHead>
-                    <TableHead className="text-right">QR Code</TableHead>
+                    <TableHead className="text-right">Trace Page</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -202,12 +243,11 @@ export default function RetailerDashboard() {
                     </TableRow>
                   )) : (
                     <TableRow>
-                      <TableCell colSpan={3} className="text-center">No items available for sale.</TableCell>
+                      <TableCell colSpan={3} className="h-24 text-center">No items available for sale.</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
               </Table>
-            )}
           </CardContent>
         </Card>
       </div>

@@ -29,9 +29,4 @@ export type ProduceLot = {
   history: SupplyChainEvent[];
 };
 
-export type Feedback = {
-  id: number;
-  lot_id: string;
-  feedback_text: string;
-  created_at: string;
-};
+export type UserRole = 'farmer' | 'distributor' | 'retailer' | 'admin' | null;

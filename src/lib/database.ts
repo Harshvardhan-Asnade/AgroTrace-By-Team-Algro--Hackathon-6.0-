@@ -1,9 +1,8 @@
 
-
 'use server';
 
 import { supabase } from '@/lib/supabaseClient';
-import type { ProduceLot, SupplyChainEvent, SupplyChainStatus, Feedback } from './types';
+import type { ProduceLot, SupplyChainEvent, SupplyChainStatus } from './types';
 import { revalidatePath } from 'next/cache';
 
 const LOT_COLUMNS = 'id, name, origin, plantingDate, harvestDate, itemCount, farmer, certificates, history';
@@ -18,8 +17,6 @@ export const refreshSchemaCache = async () => {
         const { error } = await supabase.rpc('pgrst_watch');
         if (error) {
             console.error('Error refreshing schema cache:', error);
-        } else {
-            console.log('Successfully triggered schema cache refresh.');
         }
     } catch (e) {
         console.error('Failed to call pgrst_watch RPC:', e);
@@ -37,8 +34,6 @@ export const getLotsByStatus = async (statuses: SupplyChainStatus[]): Promise<Pr
     return [];
   }
   
-  // This filtering is not ideal and should be done in the query if possible
-  // For example, by having a dedicated `status` column on the table.
   const filteredData = data.filter(lot => {
     const lastEvent = lot.history[lot.history.length - 1];
     return lastEvent && statuses.includes(lastEvent.status);
@@ -77,17 +72,33 @@ export const getLotById = async (id: string): Promise<ProduceLot | null> => {
   return data;
 };
 
-export const createProduceLot = async (lotData: Omit<ProduceLot, 'certificates'>) => {
-    console.log("Attempting to create produce lot with data:", lotData);
+// Generates a short, random, alphanumeric ID.
+const generateLotId = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = 'LOT-';
+    for (let i = 0; i < 6; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
+export const createProduceLot = async (lotData: Omit<ProduceLot, 'id' | 'certificates'>) => {
+    const newLotId = generateLotId();
+    const fullLotData = {
+        ...lotData,
+        id: newLotId,
+        certificates: [],
+    };
+
+    console.log("Attempting to create produce lot with data:", fullLotData);
     const { data, error } = await supabase
         .from('produce_lots')
-        .insert([{ ...lotData, certificates: [] }])
+        .insert([fullLotData])
         .select()
         .single();
 
     if (error) {
         console.error('Error creating produce lot in database.ts:', error);
-        // Throw the specific error message from Supabase
         throw new Error(error.message);
     }
 
@@ -121,17 +132,3 @@ export const updateLotHistory = async (lotId: string, newEvent: SupplyChainEvent
     return data;
 };
 
-export const createFeedback = async (feedbackData: Omit<Feedback, 'id' | 'created_at'>) => {
-  const { data, error } = await supabase
-    .from('feedback')
-    .insert([feedbackData])
-    .select()
-    .single();
-  
-  if (error) {
-    console.error('Error creating feedback:', error);
-    throw new Error(error.message);
-  }
-
-  return data;
-};
