@@ -7,9 +7,11 @@ import Header from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Toaster } from '@/components/ui/toaster';
 import SplashScreen from '@/components/SplashScreen';
+import { usePathname } from 'next/navigation';
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
+  const pathname = usePathname();
 
   useEffect(() => {
     // We can keep a very short delay to prevent flickering on fast connections,
@@ -18,15 +20,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(timer);
   }, []);
 
+  // Don't show header/footer on auth pages for a cleaner look
+  const showHeaderFooter = !['/login', '/register'].includes(pathname);
+
   return (
     <>
       {loading ? (
         <SplashScreen />
       ) : (
         <AuthProvider>
-          <Header />
+          {showHeaderFooter && <Header />}
           <main className="flex-grow">{children}</main>
-          <Footer />
+          {showHeaderFooter && <Footer />}
         </AuthProvider>
       )}
       <Toaster />

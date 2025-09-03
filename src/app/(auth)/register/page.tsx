@@ -46,30 +46,21 @@ export default function RegisterPage() {
 
     if (error) {
       console.error("Registration error:", error);
-      if (error.message.includes('rate limit')) {
-         toast({
-          variant: 'destructive',
-          title: 'Registration Rate Limited',
-          description:
-            'Too many sign-up attempts. Please wait a minute or consider adjusting rate limits in your Supabase project settings for development.',
-          duration: 10000,
-        });
-      }
-      else {
-        toast({
-          variant: 'destructive',
-          title: 'Registration Failed',
-          description: error.message,
-        });
-      }
+      toast({
+        variant: 'destructive',
+        title: 'Registration Failed',
+        description: error.message,
+      });
+      setLoading(false);
     } else if (data.user) {
         toast({
         title: 'Registration Successful',
-        description: 'Please check your email to confirm your account.',
+        description: 'Please check your email to confirm your account. Redirecting to login...',
         });
         router.push('/login');
+    } else {
+       setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -92,6 +83,7 @@ export default function RegisterPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={loading}
             />
           </div>
           <div className="space-y-2">
@@ -103,11 +95,12 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               minLength={6}
               required
+              disabled={loading}
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="role">Your Role</Label>
-            <Select onValueChange={(value) => setRole(value as UserRole)} required>
+            <Select onValueChange={(value) => setRole(value as UserRole)} required disabled={loading}>
               <SelectTrigger id="role">
                 <SelectValue placeholder="Select your role..." />
               </SelectTrigger>
@@ -121,7 +114,7 @@ export default function RegisterPage() {
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Create Account
+            {loading ? 'Creating Account...' : 'Create Account'}
           </Button>
         </form>
          <div className="mt-4 text-center text-sm text-muted-foreground">

@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
@@ -32,14 +33,16 @@ export default function LoginPage() {
         title: 'Login Failed',
         description: error.message,
       });
+      setLoading(false);
     } else {
       toast({
         title: 'Login Successful',
-        description: 'Welcome back!',
+        description: 'Redirecting to your dashboard...',
       });
+      // The onAuthStateChange listener in AuthProvider will handle the redirect
       router.push('/dashboard');
     }
-    setLoading(false);
+    // No need to set loading to false on success, as we are navigating away
   };
 
   return (
@@ -62,6 +65,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={loading}
             />
           </div>
           <div className="space-y-2">
@@ -72,11 +76,12 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={loading}
             />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Log In
+            {loading ? 'Logging In...' : 'Log In'}
           </Button>
         </form>
          <div className="mt-4 text-center text-sm text-muted-foreground">
