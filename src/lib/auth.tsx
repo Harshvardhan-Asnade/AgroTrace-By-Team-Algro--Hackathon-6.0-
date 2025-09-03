@@ -39,16 +39,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const handleSession = useCallback(async (session: Session | null) => {
     if (session) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
-      
       const user: User = {
         id: session.user.id,
         email: session.user.email,
-        role: profile?.role as UserRole,
+        role: session.user.user_metadata?.role as UserRole,
       };
       setUser(user);
     } else {
@@ -78,7 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [handleSession]);
 
   useEffect(() => {
-    if (!loading && !user && !['/login', '/register'].includes(pathname)) {
+    if (!loading && !user && !['/login', '/register', '/'].includes(pathname) && !pathname.startsWith('/trace')) {
         router.push('/login');
     }
   }, [user, loading, router, pathname]);

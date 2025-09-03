@@ -61,21 +61,11 @@ export default function RegisterPage() {
         });
       }
     } else if (data.user) {
-      // Create a profile entry
-      const { error: profileError } = await supabase.from('profiles').insert({ id: data.user.id, role });
-       if (profileError) {
-          toast({
-            variant: 'destructive',
-            title: 'Profile Creation Failed',
-            description: profileError.message,
-          });
-        } else {
-           toast({
-            title: 'Registration Successful',
-            description: 'Please check your email to confirm your account.',
-          });
-          router.push('/login');
-        }
+        toast({
+        title: 'Registration Successful',
+        description: 'Please check your email to confirm your account.',
+        });
+        router.push('/login');
     }
     setLoading(false);
   };

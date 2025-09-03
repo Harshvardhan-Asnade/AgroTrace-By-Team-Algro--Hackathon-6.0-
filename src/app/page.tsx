@@ -58,9 +58,9 @@ export default function Home() {
             AgriTrace brings unparalleled transparency to the food supply chain.
             Know the journey of your food from farm to fork.
           </p>
-          <Link href="/trace">
+          <Link href="/register">
             <Button size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 text-lg py-6 px-8">
-              Trace Your Food
+              Get Started
             </Button>
           </Link>
         </div>
