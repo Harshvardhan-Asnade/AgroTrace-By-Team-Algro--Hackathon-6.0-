@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [handleSession]);
 
   useEffect(() => {
-    if (!loading && !user && !['/login', '/register', '/'].includes(pathname) && !pathname.startsWith('/trace')) {
+    if (!loading && !user && !['/login', '/register', '/', '/#about', '/#features'].includes(pathname) && !pathname.startsWith('/trace')) {
         router.push('/login');
     }
   }, [user, loading, router, pathname]);

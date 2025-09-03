@@ -48,7 +48,7 @@ export default function FarmerDashboard() {
     setFormSubmitting(true);
 
     const formData = new FormData(event.currentTarget);
-    const newLotData = {
+    const newLotData: Omit<ProduceLot, 'certificates'> = {
       id: `LOT-${Math.random().toString(36).substr(2, 4).toUpperCase()}`,
       name: formData.get('produceName') as string,
       origin: formData.get('origin') as string,
@@ -56,7 +56,6 @@ export default function FarmerDashboard() {
       harvestDate: formData.get('harvestDate') as string,
       itemCount: parseInt(formData.get('itemCount') as string),
       farmer: { id: user.id, name: user.email }, // Correctly structured farmer object
-      certificates: [],
       history: [
         {
           status: 'Registered' as const,

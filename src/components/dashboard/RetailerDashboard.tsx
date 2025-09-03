@@ -23,20 +23,20 @@ export default function RetailerDashboard() {
   const [loading, setLoading] = useState(true);
   const [updatingLot, setUpdatingLot] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchLots = async () => {
-      setLoading(true);
-      const [incoming, inInventory, onSale] = await Promise.all([
-        getLotsByStatus(['In-Transit to Retailer']),
-        getLotsByStatus(['Received by Retailer']),
-        getLotsByStatus(['Available for Purchase']),
-      ]);
-      setIncomingShipments(incoming);
-      setInventory(inInventory);
-      setForSale(onSale);
-      setLoading(false);
-    };
+  const fetchLots = async () => {
+    setLoading(true);
+    const [incoming, inInventory, onSale] = await Promise.all([
+      getLotsByStatus(['In-Transit to Retailer']),
+      getLotsByStatus(['Received by Retailer']),
+      getLotsByStatus(['Available for Purchase']),
+    ]);
+    setIncomingShipments(incoming);
+    setInventory(inInventory);
+    setForSale(onSale);
+    setLoading(false);
+  };
 
+  useEffect(() => {
     fetchLots();
   }, []);
 
@@ -50,21 +50,13 @@ export default function RetailerDashboard() {
         location: 'Retail Store',
         actor: user.email,
       };
-      const updatedLot = await updateLotHistory(lotId, newEvent);
-
-      if (updatedLot) {
-        if (newStatus === 'Received by Retailer') {
-          setIncomingShipments(prev => prev.filter(lot => lot.id !== lotId));
-          setInventory(prev => [updatedLot, ...prev]);
-        } else {
-          setInventory(prev => prev.filter(lot => lot.id !== lotId));
-          setForSale(prev => [updatedLot, ...prev]);
-        }
-        toast({
-          title: 'Status Updated',
-          description: `Lot ${lotId} has been updated to "${newStatus}".`
-        });
-      }
+      await updateLotHistory(lotId, newEvent);
+      toast({
+        title: 'Status Updated',
+        description: `Lot ${lotId} has been updated to "${newStatus}".`
+      });
+      // Refetch all lots to ensure UI is consistent
+      await fetchLots();
     } catch (error: any) {
        toast({
         variant: 'destructive',
@@ -77,9 +69,11 @@ export default function RetailerDashboard() {
   };
 
   const getPreviousActor = (lot: ProduceLot): string => {
-    const lastEvent = lot.history.slice(-1)[0];
-    if (lastEvent?.status === 'In-Transit to Retailer') {
-      return lastEvent.actor;
+    // The event before 'In-Transit to Retailer' should be 'Received by Distributor'
+    // So we find that event and get the actor.
+    const transitEventIndex = lot.history.findIndex(e => e.status === 'In-Transit to Retailer');
+    if (transitEventIndex > 0) {
+      return lot.history[transitEventIndex - 1].actor;
     }
     return 'Distributor'; // Fallback
   }

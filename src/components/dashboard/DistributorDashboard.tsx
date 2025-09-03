@@ -21,18 +21,18 @@ export default function DistributorDashboard() {
   const [loading, setLoading] = useState(true);
   const [updatingLot, setUpdatingLot] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchLots = async () => {
-      setLoading(true);
-      const [incoming, inInventory] = await Promise.all([
-        getLotsByStatus(['In-Transit to Distributor']),
-        getLotsByStatus(['Received by Distributor']),
-      ]);
-      setIncomingShipments(incoming);
-      setInventory(inInventory);
-      setLoading(false);
-    };
+  const fetchLots = async () => {
+    setLoading(true);
+    const [incoming, inInventory] = await Promise.all([
+      getLotsByStatus(['In-Transit to Distributor']),
+      getLotsByStatus(['Received by Distributor']),
+    ]);
+    setIncomingShipments(incoming);
+    setInventory(inInventory);
+    setLoading(false);
+  };
 
+  useEffect(() => {
     fetchLots();
   }, []);
 
@@ -46,21 +46,13 @@ export default function DistributorDashboard() {
         location: newStatus === 'Received by Distributor' ? 'Distributor Hub' : 'En route to Retailer',
         actor: user.email,
       };
-      const updatedLot = await updateLotHistory(lotId, newEvent);
-
-      if (updatedLot) {
-        if (newStatus === 'Received by Distributor') {
-          setIncomingShipments(prev => prev.filter(lot => lot.id !== lotId));
-          setInventory(prev => [updatedLot, ...prev]);
-        } else {
-          setInventory(prev => prev.filter(lot => lot.id !== lotId));
-          // It's now in transit, so it disappears from this dashboard for now
-        }
-        toast({
-          title: 'Status Updated',
-          description: `Lot ${lotId} has been updated to "${newStatus}".`
-        });
-      }
+      await updateLotHistory(lotId, newEvent);
+      toast({
+        title: 'Status Updated',
+        description: `Lot ${lotId} has been updated to "${newStatus}".`
+      });
+      // Refetch all lots to ensure UI is consistent
+      await fetchLots();
     } catch (error: any) {
        toast({
         variant: 'destructive',

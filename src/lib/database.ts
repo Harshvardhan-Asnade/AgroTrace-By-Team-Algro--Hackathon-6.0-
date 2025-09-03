@@ -8,7 +8,8 @@ import { revalidatePath } from 'next/cache';
 export const getLotsByStatus = async (statuses: SupplyChainStatus[]): Promise<ProduceLot[]> => {
   const { data, error } = await supabase
     .from('produce_lots')
-    .select('*');
+    .select('*')
+    .order('harvestDate', { ascending: false });
 
   if (error) {
     console.error('Error fetching produce lots:', error);
@@ -22,14 +23,14 @@ export const getLotsByStatus = async (statuses: SupplyChainStatus[]): Promise<Pr
     return lastEvent && statuses.includes(lastEvent.status);
   });
 
-  return filteredData.sort((a,b) => new Date(b.harvestDate).getTime() - new Date(a.harvestDate).getTime());
+  return filteredData;
 };
 
 export const getLotsForFarmer = async (farmerId: string): Promise<ProduceLot[]> => {
     const { data, error } = await supabase
         .from('produce_lots')
         .select('*')
-        .eq('farmer->>id', farmerId) // Assumes farmer is a JSONB column with an id property
+        .eq('farmer->>id', farmerId) 
         .order('harvestDate', { ascending: false });
 
     if (error) {
@@ -55,11 +56,11 @@ export const getLotById = async (id: string): Promise<ProduceLot | null> => {
   return data;
 };
 
-export const createProduceLot = async (lotData: Omit<ProduceLot, 'history'> & { history: SupplyChainEvent[] }) => {
+export const createProduceLot = async (lotData: Omit<ProduceLot, 'certificates'>) => {
     console.log("Attempting to create produce lot with data:", lotData);
     const { data, error } = await supabase
         .from('produce_lots')
-        .insert([lotData])
+        .insert([{ ...lotData, certificates: [] }])
         .select()
         .single();
 
