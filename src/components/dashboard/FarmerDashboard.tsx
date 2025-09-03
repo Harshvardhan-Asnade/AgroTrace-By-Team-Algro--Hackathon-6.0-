@@ -72,9 +72,20 @@ export default function FarmerDashboard() {
       setLots(prevLots => [newLot, ...prevLots]);
       toast({ title: 'Success', description: 'New produce batch registered!' });
       (event.target as HTMLFormElement).reset();
-    } catch (error) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Failed to register produce batch.' });
-      console.error(error);
+    } catch (error: any) {
+        let description = 'An unexpected error occurred. Please try again.';
+        if (error.message.includes('relation "public.produce_lots" does not exist')) {
+            description = 'The "produce_lots" table was not found. Please create it in your Supabase dashboard and enable RLS.';
+        } else if (error.message.includes('new row violates row-level security policy')) {
+            description = 'Cannot add new batch. Please check your Row Level Security policies for the "produce_lots" table.';
+        }
+        toast({
+            variant: 'destructive',
+            title: 'Registration Failed',
+            description: description,
+            duration: 9000
+        });
+        console.error(error);
     } finally {
       setFormSubmitting(false);
     }
