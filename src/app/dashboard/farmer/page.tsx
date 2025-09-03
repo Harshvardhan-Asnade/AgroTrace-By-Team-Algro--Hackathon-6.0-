@@ -89,7 +89,8 @@ export default function FarmerDashboard() {
       toast({ title: 'Simulating Transaction', description: 'Please confirm in your wallet (simulation).'});
       // Simulate a transaction delay
       await new Promise(resolve => setTimeout(resolve, 2000));
-      const mockBatchId = `B-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+      // Generate a mock UUID - in a real scenario this comes from the contract event
+      const mockBatchId = crypto.randomUUID();
       console.log("Simulated mint successful. Batch ID:", mockBatchId);
       toast({ title: 'Transaction Simulated', description: `Batch minted with ID: ${mockBatchId}` });
       return mockBatchId;
@@ -131,7 +132,7 @@ export default function FarmerDashboard() {
 
       if (newLot) {
         toast({ title: 'Success', description: 'Produce batch registered on-chain and off-chain.' });
-        setLots([newLot, ...lots]);
+        fetchFarmerLots(); // Refresh the list
         form.reset();
         setOpenDialog(false);
       } else {
