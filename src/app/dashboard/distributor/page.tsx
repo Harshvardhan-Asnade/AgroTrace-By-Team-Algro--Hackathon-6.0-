@@ -110,10 +110,10 @@ export default function DistributorDashboard() {
                     <TableCell><Badge>{lot.status}</Badge></TableCell>
                     <TableCell className="space-x-2">
                        {lot.status === 'In-Transit to Distributor' && (
-                        <Button size="sm" onClick={() => handleReceiveLot(lot.id)}><CheckCircle className="mr-2" /> Receive</Button>
+                        <Button size="sm" onClick={() => handleReceiveLot(lot.id)}><CheckCircle className="mr-2 h-4 w-4" /> Receive</Button>
                       )}
                       {lot.status === 'Received by Distributor' && (
-                        <Button size="sm" onClick={() => handleTransferToRetailer(lot.id)}><Truck className="mr-2"/> Transfer to Retailer</Button>
+                        <Button size="sm" onClick={() => handleTransferToRetailer(lot.id)}><Truck className="mr-2 h-4 w-4"/> Transfer to Retailer</Button>
                       )}
                     </TableCell>
                   </TableRow>
