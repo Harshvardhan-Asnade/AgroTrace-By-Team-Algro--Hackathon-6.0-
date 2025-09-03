@@ -92,8 +92,6 @@ export const createProduceLot = async (lotData: Omit<ProduceLot, 'certificates'>
     }
 
     console.log("Successfully created lot:", data);
-    // After a successful write, trigger a schema refresh to be safe.
-    await refreshSchemaCache();
     revalidatePath('/dashboard');
     return data;
 };

@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
-import { getLotsByStatus, updateLotHistory } from '@/lib/database';
+import { getLotsByStatus, updateLotHistory, refreshSchemaCache } from '@/lib/database';
 import type { ProduceLot } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,18 +21,19 @@ export default function DistributorDashboard() {
   const [loading, setLoading] = useState(true);
   const [updatingLot, setUpdatingLot] = useState<string | null>(null);
 
-  const fetchLots = async () => {
-    setLoading(true);
-    const [incoming, inInventory] = await Promise.all([
-      getLotsByStatus(['In-Transit to Distributor']),
-      getLotsByStatus(['Received by Distributor']),
-    ]);
-    setIncomingShipments(incoming);
-    setInventory(inInventory);
-    setLoading(false);
-  };
-
   useEffect(() => {
+    const fetchLots = async () => {
+      setLoading(true);
+      await refreshSchemaCache();
+      const [incoming, inInventory] = await Promise.all([
+        getLotsByStatus(['In-Transit to Distributor']),
+        getLotsByStatus(['Received by Distributor']),
+      ]);
+      setIncomingShipments(incoming);
+      setInventory(inInventory);
+      setLoading(false);
+    };
+
     fetchLots();
   }, []);
 
@@ -52,6 +53,17 @@ export default function DistributorDashboard() {
         description: `Lot ${lotId} has been updated to "${newStatus}".`
       });
       // Refetch all lots to ensure UI is consistent
+      const fetchLots = async () => {
+        setLoading(true);
+        await refreshSchemaCache();
+        const [incoming, inInventory] = await Promise.all([
+          getLotsByStatus(['In-Transit to Distributor']),
+          getLotsByStatus(['Received by Distributor']),
+        ]);
+        setIncomingShipments(incoming);
+        setInventory(inInventory);
+        setLoading(false);
+      };
       await fetchLots();
     } catch (error: any) {
        toast({
