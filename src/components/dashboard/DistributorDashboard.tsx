@@ -67,7 +67,7 @@ export default function DistributorDashboard() {
   const stats = {
     incomingCount: incomingShipments.length,
     inventoryCount: inventory.length,
-    inventoryValue: inventory.reduce((acc, lot) => acc + lot.itemCount, 0),
+    inventoryValue: inventory.reduce((acc, lot) => acc + lot.items_in_lot, 0),
   };
 
   if (loading) {
@@ -143,8 +143,8 @@ export default function DistributorDashboard() {
                   <TableRow key={lot.id}>
                     <TableCell className="font-medium">{lot.id}</TableCell>
                     <TableCell>{lot.farmer.name}</TableCell>
-                    <TableCell>{lot.name}</TableCell>
-                    <TableCell>{lot.itemCount.toLocaleString()}</TableCell>
+                    <TableCell>{lot.produce_name}</TableCell>
+                    <TableCell>{lot.items_in_lot.toLocaleString()}</TableCell>
                     <TableCell className="text-right">
                       <Button onClick={() => handleUpdateStatus(lot.id, 'Received by Distributor')} disabled={updatingLot === lot.id}>
                          {updatingLot === lot.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
@@ -182,8 +182,8 @@ export default function DistributorDashboard() {
                 {inventory.length > 0 ? inventory.map((lot) => (
                   <TableRow key={lot.id}>
                     <TableCell className="font-medium">{lot.id}</TableCell>
-                    <TableCell>{lot.name}</TableCell>
-                    <TableCell>{lot.itemCount.toLocaleString()}</TableCell>
+                    <TableCell>{lot.produce_name}</TableCell>
+                    <TableCell>{lot.items_in_lot.toLocaleString()}</TableCell>
                     <TableCell>{new Date(lot.history.find(h => h.status === 'Received by Distributor')?.timestamp || '').toLocaleDateString()}</TableCell>
                     <TableCell className="text-right">
                       <Button onClick={() => handleUpdateStatus(lot.id, 'In-Transit to Retailer')} variant="outline" disabled={updatingLot === lot.id}>

@@ -30,13 +30,13 @@ export default async function TraceLotPage({ params }: { params: { lotId: string
       <div className="container mx-auto py-12 md:py-20 px-4">
         <Card className="mb-8 shadow-lg w-full max-w-4xl mx-auto">
           <CardHeader>
-            <CardTitle className="text-3xl font-headline tracking-tight text-primary">{lot.name}</CardTitle>
+            <CardTitle className="text-3xl font-headline tracking-tight text-primary">{lot.produce_name}</CardTitle>
             <CardDescription>Lot ID: {lot.id}</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-6 text-sm">
             <div className="flex items-start gap-3"><MapPin className="text-primary h-5 w-5 mt-0.5"/> <div><p className="font-bold text-base">Origin</p><p className="text-muted-foreground">{lot.origin}</p></div></div>
             <div className="flex items-start gap-3"><User className="text-primary h-5 w-5 mt-0.5"/> <div><p className="font-bold text-base">Farmer</p><p className="text-muted-foreground">{lot.farmer.name}</p></div></div>
-            <div className="flex items-start gap-3"><Package className="text-primary h-5 w-5 mt-0.5"/> <div><p className="font-bold text-base">Lot Size</p><p className="text-muted-foreground">{lot.itemCount.toLocaleString()} items</p></div></div>
+            <div className="flex items-start gap-3"><Package className="text-primary h-5 w-5 mt-0.5"/> <div><p className="font-bold text-base">Lot Size</p><p className="text-muted-foreground">{lot.items_in_lot.toLocaleString()} items</p></div></div>
             <div className="flex items-start gap-3"><Calendar className="text-primary h-5 w-5 mt-0.5"/> <div><p className="font-bold text-base">Planted</p><p className="text-muted-foreground">{new Date(lot.plantingDate).toLocaleDateString()}</p></div></div>
             <div className="flex items-start gap-3"><Calendar className="text-primary h-5 w-5 mt-0.5"/> <div><p className="font-bold text-base">Harvested</p><p className="text-muted-foreground">{new Date(lot.harvestDate).toLocaleDateString()}</p></div></div>
             {lot.certificates && lot.certificates.length > 0 && (

@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import type { ProduceLot, SupplyChainEvent, SupplyChainStatus } from './types';
 import { revalidatePath } from 'next/cache';
 
-const LOT_COLUMNS = 'id, name, origin, plantingDate, harvestDate, itemCount, farmer, certificates, history';
+const LOT_COLUMNS = 'id, produce_name, origin, plantingDate, harvestDate, items_in_lot, farmer, certificates, history';
 
 /**
  * Forces the Supabase PostgREST API to reload its schema cache.
@@ -25,7 +25,7 @@ export const refreshSchemaCache = async () => {
 
 export const getLotsByStatus = async (statuses: SupplyChainStatus[]): Promise<ProduceLot[]> => {
   const { data, error } = await supabase
-    .from('produce_lots')
+    .from('produce_batches')
     .select(LOT_COLUMNS)
     .order('harvestDate', { ascending: false });
 
@@ -45,7 +45,7 @@ export const getLotsByStatus = async (statuses: SupplyChainStatus[]): Promise<Pr
 
 export const getLotsForFarmer = async (farmerId: string): Promise<ProduceLot[]> => {
     const { data, error } = await supabase
-        .from('produce_lots')
+        .from('produce_batches')
         .select(LOT_COLUMNS)
         .eq('farmer->>id', farmerId) 
         .order('harvestDate', { ascending: false });
@@ -60,7 +60,7 @@ export const getLotsForFarmer = async (farmerId: string): Promise<ProduceLot[]> 
 
 export const getLotById = async (id: string): Promise<ProduceLot | null> => {
   const { data, error } = await supabase
-    .from('produce_lots')
+    .from('produce_batches')
     .select(LOT_COLUMNS)
     .eq('id', id)
     .single();
@@ -93,7 +93,7 @@ export const createProduceLot = async (lotData: Omit<ProduceLot, 'id' | 'certifi
 
     console.log("Attempting to create produce lot with data:", fullLotData);
     const { data, error } = await supabase
-        .from('produce_lots')
+        .from('produce_batches')
         .insert([fullLotData])
         .select()
         .single();
@@ -116,7 +116,7 @@ export const updateLotHistory = async (lotId: string, newEvent: SupplyChainEvent
     const newHistory = [...lot.history, newEvent];
 
     const { data, error } = await supabase
-        .from('produce_lots')
+        .from('produce_batches')
         .update({ history: newHistory })
         .eq('id', lotId)
         .select()

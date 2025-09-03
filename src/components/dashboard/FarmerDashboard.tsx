@@ -46,11 +46,11 @@ export default function FarmerDashboard() {
 
     const formData = new FormData(event.currentTarget);
     const newLotData: Omit<ProduceLot, 'id' | 'certificates' | 'history'> & { history: any[] } = {
-      name: formData.get('produceName') as string,
+      produce_name: formData.get('produceName') as string,
       origin: formData.get('origin') as string,
       plantingDate: formData.get('plantingDate') as string,
       harvestDate: formData.get('harvestDate') as string,
-      itemCount: parseInt(formData.get('itemCount') as string),
+      items_in_lot: parseInt(formData.get('itemCount') as string),
       farmer: { id: user.id, name: user.email },
       history: [
         {
@@ -63,7 +63,7 @@ export default function FarmerDashboard() {
     };
 
     try {
-      await createProduceLot(newLotData);
+      await createProduceLot(newLotData as any);
       toast({ title: 'Success', description: 'New produce batch registered!' });
       (event.target as HTMLFormElement).reset();
       await fetchLots(); 
@@ -82,7 +82,7 @@ export default function FarmerDashboard() {
   
   const stats = {
     totalBatches: lots.length,
-    totalItems: lots.reduce((acc, lot) => acc + lot.itemCount, 0),
+    totalItems: lots.reduce((acc, lot) => acc + lot.items_in_lot, 0),
     inTransit: lots.filter(lot => {
       const latestStatus = lot.history[lot.history.length - 1]?.status;
       return latestStatus === 'In-Transit to Distributor' || latestStatus === 'In-Transit to Retailer';
@@ -204,8 +204,8 @@ export default function FarmerDashboard() {
                     lots.map((lot) => (
                     <TableRow key={lot.id}>
                         <TableCell className="font-medium">{lot.id}</TableCell>
-                        <TableCell>{lot.name}</TableCell>
-                        <TableCell>{lot.itemCount.toLocaleString()}</TableCell>
+                        <TableCell>{lot.produce_name}</TableCell>
+                        <TableCell>{lot.items_in_lot.toLocaleString()}</TableCell>
                         <TableCell>
                             <span className="px-2 py-1 text-xs font-semibold rounded-full bg-primary/10 text-primary">
                                 {lot.history[lot.history.length - 1].status}

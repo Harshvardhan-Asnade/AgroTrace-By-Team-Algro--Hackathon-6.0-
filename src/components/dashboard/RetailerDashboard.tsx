@@ -158,8 +158,8 @@ export default function RetailerDashboard() {
                   <TableRow key={lot.id}>
                     <TableCell className="font-medium">{lot.id}</TableCell>
                     <TableCell>{getPreviousActor(lot)}</TableCell>
-                    <TableCell>{lot.name}</TableCell>
-                    <TableCell>{lot.itemCount.toLocaleString()}</TableCell>
+                    <TableCell>{lot.produce_name}</TableCell>
+                    <TableCell>{lot.items_in_lot.toLocaleString()}</TableCell>
                     <TableCell className="text-right">
                       <Button onClick={() => handleUpdateStatus(lot.id, 'Received by Retailer')} disabled={updatingLot === lot.id}>
                          {updatingLot === lot.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
@@ -196,7 +196,7 @@ export default function RetailerDashboard() {
                   {inventory.length > 0 ? inventory.map((lot) => (
                     <TableRow key={lot.id}>
                       <TableCell className="font-medium">{lot.id}</TableCell>
-                      <TableCell>{lot.name}</TableCell>
+                      <TableCell>{lot.produce_name}</TableCell>
                       <TableCell className="text-right">
                         <Button onClick={() => handleUpdateStatus(lot.id, 'Available for Purchase')} variant="outline" disabled={updatingLot === lot.id}>
                           {updatingLot === lot.id && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -232,7 +232,7 @@ export default function RetailerDashboard() {
                   {forSale.length > 0 ? forSale.map((lot) => (
                     <TableRow key={lot.id}>
                       <TableCell className="font-medium">{lot.id}</TableCell>
-                      <TableCell>{lot.name}</TableCell>
+                      <TableCell>{lot.produce_name}</TableCell>
                       <TableCell className="text-right">
                         <Button asChild variant="ghost" size="icon">
                           <Link href={`/trace/${lot.id}`} title="View QR and Trace">

@@ -16,11 +16,11 @@ export type SupplyChainEvent = {
 
 export type ProduceLot = {
   id: string;
-  name: string;
+  produce_name: string;
   origin: string;
   plantingDate: string;
   harvestDate: string;
-  itemCount: number;
+  items_in_lot: number;
   farmer: {
     id: string;
     name: string;
