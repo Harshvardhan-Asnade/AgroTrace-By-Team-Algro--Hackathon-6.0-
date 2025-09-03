@@ -63,11 +63,11 @@ export async function createProduceLot(lotData: {
       status: 'Registered',
       timestamp: new Date().toISOString(),
       location: lotData.origin,
-      actor: lotData.farmer_id // Use farmer's UUID as the initial actor
+      actor: lotData.farmer_id
     }];
 
     const payload = {
-      ...lotData,
+      ...lotData, // This ensures id, farmer_id, and all other fields are included
       status: 'Registered',
       history: initialHistory,
     };
@@ -79,16 +79,13 @@ export async function createProduceLot(lotData: {
       .single();
 
     if (error) {
-      // This will now log the specific Supabase error to the server console
       console.error('Error creating produce lot in Supabase:', error.message);
-      // Re-throw the error so the calling function can catch it
       throw new Error(`Database insert failed: ${error.message}`);
     }
     
     return data;
   } catch (err) {
       console.error("Exception in createProduceLot:", err);
-      // Ensure any other exceptions are also propagated
       throw err;
   }
 }
