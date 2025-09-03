@@ -49,12 +49,13 @@ export async function getLotById(lotId: string): Promise<ProduceLot | null> {
 }
 
 // Function to create a new produce lot
-export async function createProduceLot(lotData: Omit<ProduceLot, 'id' | 'status' | 'history' | 'created_at'>): Promise<ProduceLot | null> {
+export async function createProduceLot(lotData: Omit<ProduceLot, 'status' | 'history' | 'created_at'>): Promise<ProduceLot | null> {
   const initialHistory = [{
     status: 'Registered',
     timestamp: new Date().toISOString(),
     location: lotData.origin,
-    actor: 'system'
+    // When minting, the farmer's wallet is the actor
+    actor: lotData.farmer_id 
   }];
 
   const { data, error } = await supabase

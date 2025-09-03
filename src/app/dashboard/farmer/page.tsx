@@ -3,8 +3,9 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
+import { useWallet } from '@/lib/wallet';
 import { useRouter } from 'next/navigation';
-import { createProduceLot, getLotsForFarmer, Lot } from '@/lib/database';
+import { createProduceLot, getLotsForFarmer, Lot, updateLot } from '@/lib/database';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,14 +13,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { Loader2, PlusCircle, BarChart, Package, Truck, QrCode } from 'lucide-react';
+import { Loader2, PlusCircle, BarChart, Package, Truck, QrCode, Wallet } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { updateLot } from '@/lib/database';
+import { ethers } from 'ethers';
 
+// This would come from your contract's ABI
+const contractABI: any[] = []; 
+const contractAddress = "0x..."; // Your deployed contract address
 
 const produceSchema = z.object({
   produce_name: z.string().min(1, 'Produce name is required'),
@@ -33,6 +37,7 @@ type ProduceFormValues = z.infer<typeof produceSchema>;
 
 export default function FarmerDashboard() {
   const { user, loading: authLoading } = useAuth();
+  const { signer, address: walletAddress, connectWallet } = useWallet();
   const router = useRouter();
   const [lots, setLots] = useState<Lot[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,42 +82,107 @@ export default function FarmerDashboard() {
     }
   }, [user]);
 
+  // --- MOCK BLOCKCHAIN FUNCTIONS ---
+  // Replace these with actual contract calls
+  const mockMintBatch = async (values: ProduceFormValues): Promise<string> => {
+      console.log("Simulating mintBatch transaction with data:", values);
+      toast({ title: 'Simulating Transaction', description: 'Please confirm in your wallet (simulation).'});
+      // Simulate a transaction delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      const mockBatchId = `B-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+      console.log("Simulated mint successful. Batch ID:", mockBatchId);
+      toast({ title: 'Transaction Simulated', description: `Batch minted with ID: ${mockBatchId}` });
+      return mockBatchId;
+  };
+
+  const mockTransferBatch = async (batchId: string, distributorAddress: string): Promise<boolean> => {
+      console.log(`Simulating transferBatch for batch ${batchId} to ${distributorAddress}`);
+      toast({ title: 'Simulating Transaction', description: 'Please confirm transfer in wallet (simulation).'});
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log("Simulated transfer successful.");
+      toast({ title: 'Transfer Simulated', description: `Batch ${batchId} transferred.` });
+      return true;
+  };
+  // --- END MOCK FUNCTIONS ---
+
+
   const onSubmit = async (values: ProduceFormValues) => {
     if (!user) return;
+    if (!signer || !walletAddress) {
+      toast({ variant: 'destructive', title: 'Wallet Not Connected', description: 'Please connect your wallet to register a batch.'});
+      connectWallet();
+      return;
+    }
     setIsSubmitting(true);
     
-    const lotData: Omit<Lot, 'id' | 'status' | 'history' | 'created_at'> = {
-      ...values,
-      farmer_id: user.id,
-    };
+    try {
+      // 1. Blockchain Transaction (Simulated)
+      // const contract = new ethers.Contract(contractAddress, contractABI, signer);
+      // const tx = await contract.mintBatch(...);
+      // const receipt = await tx.wait();
+      // const batchId = receipt.events[0].args.batchId.toString();
+      const batchId = await mockMintBatch(values);
 
-    const newLot = await createProduceLot(lotData);
-    if (newLot) {
-      toast({ title: 'Success', description: 'Produce batch registered successfully.' });
-      setLots([newLot, ...lots]);
-      form.reset();
-      setOpenDialog(false);
-    } else {
-      toast({ variant: 'destructive', title: 'Error', description: 'Failed to register produce.' });
+
+      // 2. Supabase DB Insert
+      const lotData: Omit<Lot, 'status' | 'history' | 'created_at'> = {
+        id: batchId, // Use the ID from the blockchain
+        ...values,
+        farmer_id: user.id,
+      };
+
+      const newLot = await createProduceLot(lotData);
+
+      if (newLot) {
+        toast({ title: 'Success', description: 'Produce batch registered on-chain and off-chain.' });
+        setLots([newLot, ...lots]);
+        form.reset();
+        setOpenDialog(false);
+      } else {
+        throw new Error('Failed to save batch details to the database.');
+      }
+    } catch (error) {
+       console.error("Error during batch registration:", error);
+       toast({ variant: 'destructive', title: 'Error', description: 'Failed to register produce. Check console for details.' });
     }
+
     setIsSubmitting(false);
   };
   
   const handleTransferToDistributor = async (lotId: string) => {
-    const actorName = user?.email || 'Farmer';
-    const newHistoryEvent = {
-      status: 'In-Transit to Distributor',
-      timestamp: new Date().toISOString(),
-      location: 'En route to Distributor',
-      actor: actorName,
-    };
+    if (!signer || !walletAddress) {
+       toast({ variant: 'destructive', title: 'Wallet Not Connected', description: 'Please connect your wallet to transfer a batch.'});
+       connectWallet();
+       return;
+    }
 
-    const success = await updateLot(lotId, { status: 'In-Transit to Distributor' }, newHistoryEvent);
-    if (success) {
-      toast({ title: 'Lot Transferred!', description: 'Lot is now in transit to the distributor.' });
-      fetchFarmerLots();
-    } else {
-      toast({ variant: 'destructive', title: 'Update Failed', description: 'Could not update lot status.' });
+    try {
+      // Here you would get the distributor's wallet address, e.g., from a form
+      const mockDistributorAddress = "0xDISTRIBUTOR_ADDRESS...";
+
+      // 1. Blockchain Transaction (Simulated)
+      const success = await mockTransferBatch(lotId, mockDistributorAddress);
+      if (!success) throw new Error("Blockchain transfer failed.");
+
+      // 2. Supabase DB Update
+      const actorName = walletAddress; // Use wallet address as actor
+      const newHistoryEvent = {
+        status: 'In-Transit to Distributor',
+        timestamp: new Date().toISOString(),
+        location: 'En route to Distributor',
+        actor: actorName,
+      };
+
+      const dbSuccess = await updateLot(lotId, { status: 'In-Transit to Distributor' }, newHistoryEvent);
+      if (dbSuccess) {
+        toast({ title: 'Lot Transferred!', description: 'Lot is now in transit to the distributor.' });
+        fetchFarmerLots(); // Refresh the list
+      } else {
+        throw new Error("Database update failed after transfer.");
+      }
+    } catch(error) {
+      console.error("Error during transfer:", error);
+      toast({ variant: 'destructive', title: 'Update Failed', description: 'Could not update lot status. See console for details.' });
     }
   };
 
@@ -135,8 +205,14 @@ export default function FarmerDashboard() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Register a New Produce Batch</DialogTitle>
-              <DialogDescription>Fill in the details below to create a new lot on the blockchain.</DialogDescription>
+              <DialogDescription>This will create a new batch on the blockchain and in the database. Ensure your wallet is connected.</DialogDescription>
             </DialogHeader>
+            {!walletAddress && (
+              <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed p-4">
+                  <p className="text-muted-foreground text-center">Your wallet is not connected. Please connect it to register a batch.</p>
+                  <Button onClick={connectWallet}><Wallet className="mr-2"/>Connect Wallet</Button>
+              </div>
+            )}
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField control={form.control} name="produce_name" render={({ field }) => (
@@ -174,7 +250,7 @@ export default function FarmerDashboard() {
                     <FormMessage />
                   </FormItem>
                 )} />
-                <Button type="submit" disabled={isSubmitting} className="w-full">
+                <Button type="submit" disabled={isSubmitting || !walletAddress} className="w-full">
                   {isSubmitting ? <Loader2 className="animate-spin" /> : 'Register Batch'}
                 </Button>
               </form>
@@ -216,7 +292,7 @@ export default function FarmerDashboard() {
       <Card>
         <CardHeader>
           <CardTitle>My Produce Batches</CardTitle>
-          <CardDescription>A list of all your registered produce batches.</CardDescription>
+          <CardDescription>A list of all your registered produce batches on the blockchain.</CardDescription>
         </CardHeader>
         <CardContent>
            <Table>

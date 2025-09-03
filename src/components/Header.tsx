@@ -6,6 +6,7 @@ import { Logo } from './Logo';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
+import { useWallet } from '@/lib/wallet';
 import { Badge } from './ui/badge';
 import {
   DropdownMenu,
@@ -15,12 +16,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, LogOut } from 'lucide-react';
+import { User, LogOut, Wallet } from 'lucide-react';
 
 export default function Header() {
   const pathname = usePathname();
   const isHomePage = pathname === '/';
   const { user, logout } = useAuth();
+  const { connectWallet, disconnectWallet, address } = useWallet();
+
+  const truncateAddress = (addr: string) => {
+    return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -39,23 +45,33 @@ export default function Header() {
         </nav>
         <div className="flex flex-1 items-center justify-end space-x-4">
           {user ? (
-             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="secondary" className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  <span>{user.email}</span>
-                   <Badge variant="outline">{user.user_metadata.role}</Badge>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+             <div className="flex items-center gap-2">
+                {address ? (
+                   <Button variant="outline" onClick={disconnectWallet}>
+                     <Wallet className="mr-2" />
+                     {truncateAddress(address)}
+                    </Button>
+                ) : (
+                  <Button variant="outline" onClick={connectWallet}><Wallet className="mr-2"/> Connect Wallet</Button>
+                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="secondary" className="flex items-center gap-2">
+                      <User className="h-5 w-5" />
+                      <span className="hidden sm:inline">{user.email}</span>
+                      <Badge variant="outline">{user.user_metadata.role}</Badge>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={logout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
           ) : (
             <div className="space-x-2">
               <Button asChild variant="ghost">
