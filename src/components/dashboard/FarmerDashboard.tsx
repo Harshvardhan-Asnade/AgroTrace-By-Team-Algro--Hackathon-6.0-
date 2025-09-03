@@ -55,7 +55,7 @@ export default function FarmerDashboard() {
       plantingDate: formData.get('plantingDate') as string,
       harvestDate: formData.get('harvestDate') as string,
       itemCount: parseInt(formData.get('itemCount') as string),
-      farmer: { id: user.id, name: user.email },
+      farmer: { id: user.id, name: user.email }, // Correctly structured farmer object
       certificates: [],
       history: [
         {
@@ -77,7 +77,7 @@ export default function FarmerDashboard() {
         toast({
             variant: 'destructive',
             title: 'Registration Failed',
-            description: error.message,
+            description: `An unexpected error occurred: ${error.message}`,
             duration: 9000
         });
     } finally {
