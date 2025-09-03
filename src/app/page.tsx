@@ -1,8 +1,10 @@
+'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tractor, Box, Store, ScanLine, FileText, Bot } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 export default function Home() {
   const features = [
@@ -38,6 +40,24 @@ export default function Home() {
     },
   ];
 
+  const sectionVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.5,
+        ease: 'easeOut',
+      },
+    }),
+  };
+
   return (
     <div className="flex flex-col items-center">
       <section className="w-full relative h-[60vh] md:h-[70vh]">
@@ -50,7 +70,12 @@ export default function Home() {
           priority
         />
         <div className="absolute inset-0 bg-black/50" />
-        <div className="relative z-10 flex flex-col items-center justify-center h-full text-center text-white p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="relative z-10 flex flex-col items-center justify-center h-full text-center text-white p-4"
+        >
           <h1 className="text-4xl md:text-6xl font-bold font-headline mb-4 tracking-tight">
             Trust in Every Bite
           </h1>
@@ -63,10 +88,17 @@ export default function Home() {
               Get Started
             </Button>
           </Link>
-        </div>
+        </motion.div>
       </section>
 
-      <section id="about" className="w-full py-16 md:py-24 bg-secondary">
+      <motion.section
+        id="about"
+        className="w-full py-16 md:py-24 bg-secondary"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.3 }}
+        variants={sectionVariants}
+      >
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold font-headline mb-6">
             What is AgriTrace?
@@ -75,30 +107,39 @@ export default function Home() {
             AgriTrace is a revolutionary platform that leverages blockchain technology to create a transparent, secure, and traceable food supply chain. We empower farmers, distributors, retailers, and consumers with the data they need to ensure food quality, authenticity, and safety.
           </p>
         </div>
-      </section>
+      </motion.section>
 
-      <section id="features" className="w-full py-16 md:py-24">
+      <motion.section
+        id="features"
+        className="w-full py-16 md:py-24"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.1 }}
+        variants={sectionVariants}
+      >
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-12">
             Our Features
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="bg-background border-border shadow-lg hover:shadow-xl transition-shadow duration-300">
-                <CardHeader className="flex flex-col items-center text-center">
-                  <div className="p-4 bg-primary/10 rounded-full mb-4">
-                    {feature.icon}
-                  </div>
-                  <CardTitle className="font-headline">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-center text-muted-foreground">{feature.description}</p>
-                </CardContent>
-              </Card>
+              <motion.div key={index} custom={index} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.5 }} variants={cardVariants}>
+                <Card className="bg-background border-border shadow-lg hover:shadow-xl transition-shadow duration-300 h-full">
+                  <CardHeader className="flex flex-col items-center text-center">
+                    <div className="p-4 bg-primary/10 rounded-full mb-4">
+                      {feature.icon}
+                    </div>
+                    <CardTitle className="font-headline">{feature.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-center text-muted-foreground">{feature.description}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
     </div>
   );
 }
