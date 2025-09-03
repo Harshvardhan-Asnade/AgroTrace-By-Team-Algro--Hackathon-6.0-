@@ -3,11 +3,9 @@
 import { getLotById } from '@/lib/database';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { notFound } from 'next/navigation';
-import { Tractor, Box, Warehouse, Store, CheckCircle, Calendar, Package, MapPin, FileText, User, MessageSquare } from 'lucide-react';
+import { Tractor, Box, Warehouse, Store, CheckCircle, Calendar, Package, MapPin, FileText, User } from 'lucide-react';
 import type { SupplyChainStatus } from '@/lib/types';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { FeedbackForm } from './FeedbackForm';
 
 const statusIcons: Record<SupplyChainStatus, React.ReactNode> = {
   'Registered': <Tractor className="h-5 w-5" />,
@@ -71,19 +69,7 @@ export default async function TraceLotPage({ params }: { params: { lotId: string
             </div>
         </div>
         <div>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><MessageSquare /> Leave Feedback</CardTitle>
-                    <CardDescription>Share your experience with this product.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="feedback">Your Feedback</Label>
-                        <Textarea id="feedback" placeholder="How was the quality? Let us know!" />
-                    </div>
-                    <Button className="w-full">Submit Feedback</Button>
-                </CardContent>
-            </Card>
+            <FeedbackForm lotId={lot.id} />
         </div>
       </div>
     </div>

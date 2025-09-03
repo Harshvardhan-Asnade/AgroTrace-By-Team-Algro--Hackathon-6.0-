@@ -28,3 +28,10 @@ export type ProduceLot = {
   certificates: { name: string; url: string }[];
   history: SupplyChainEvent[];
 };
+
+export type Feedback = {
+  id: number;
+  lot_id: string;
+  feedback_text: string;
+  created_at: string;
+};

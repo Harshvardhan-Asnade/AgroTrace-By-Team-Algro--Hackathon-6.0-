@@ -2,7 +2,7 @@
 'use server';
 
 import { supabase } from '@/lib/supabaseClient';
-import type { ProduceLot, SupplyChainEvent, SupplyChainStatus } from './types';
+import type { ProduceLot, SupplyChainEvent, SupplyChainStatus, Feedback } from './types';
 import { revalidatePath } from 'next/cache';
 
 export const getLotsByStatus = async (statuses: SupplyChainStatus[]): Promise<ProduceLot[]> => {
@@ -98,4 +98,19 @@ export const updateLotHistory = async (lotId: string, newEvent: SupplyChainEvent
     revalidatePath('/dashboard');
     revalidatePath(`/trace/${lotId}`);
     return data;
-}
+};
+
+export const createFeedback = async (feedbackData: Omit<Feedback, 'id' | 'created_at'>) => {
+  const { data, error } = await supabase
+    .from('feedback')
+    .insert([feedbackData])
+    .select()
+    .single();
+  
+  if (error) {
+    console.error('Error creating feedback:', error);
+    throw new Error(error.message);
+  }
+
+  return data;
+};
