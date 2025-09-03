@@ -7,6 +7,24 @@ import { revalidatePath } from 'next/cache';
 
 const LOT_COLUMNS = 'id, name, origin, plantingDate, harvestDate, itemCount, farmer, certificates, history';
 
+/**
+ * Forces the Supabase PostgREST API to reload its schema cache.
+ * This is a workaround for the issue where the API doesn't immediately
+ * recognize new tables or columns added via the SQL editor.
+ */
+export const refreshSchemaCache = async () => {
+    try {
+        const { error } = await supabase.rpc('pgrst_watch');
+        if (error) {
+            console.error('Error refreshing schema cache:', error);
+        } else {
+            console.log('Successfully triggered schema cache refresh.');
+        }
+    } catch (e) {
+        console.error('Failed to call pgrst_watch RPC:', e);
+    }
+}
+
 export const getLotsByStatus = async (statuses: SupplyChainStatus[]): Promise<ProduceLot[]> => {
   const { data, error } = await supabase
     .from('produce_lots')
@@ -37,6 +55,10 @@ export const getLotsForFarmer = async (farmerId: string): Promise<ProduceLot[]> 
 
     if (error) {
         console.error('Error fetching farmer lots:', error);
+        // If we get a schema cache error, try to refresh it.
+        if (error.code === 'PGRST205') {
+            await refreshSchemaCache();
+        }
         return [];
     }
     return data;
@@ -73,6 +95,8 @@ export const createProduceLot = async (lotData: Omit<ProduceLot, 'certificates'>
     }
 
     console.log("Successfully created lot:", data);
+    // After a successful write, trigger a schema refresh to be safe.
+    await refreshSchemaCache();
     revalidatePath('/dashboard');
     return data;
 };
