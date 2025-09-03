@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
@@ -44,6 +45,7 @@ export default function RegisterPage() {
     });
 
     if (error) {
+      console.error("Registration error:", error);
       if (error.message.includes('rate limit')) {
          toast({
           variant: 'destructive',

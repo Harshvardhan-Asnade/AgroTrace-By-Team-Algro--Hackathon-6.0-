@@ -63,8 +63,8 @@ export const createProduceLot = async (lotData: Omit<ProduceLot, 'history'> & { 
         .single();
 
     if (error) {
-        console.error('Error creating produce lot:', error);
-        throw new Error('Failed to create produce lot.');
+        console.error('Error creating produce lot:', error.message);
+        throw new Error(error.message);
     }
     revalidatePath('/dashboard');
     return data;
@@ -94,4 +94,3 @@ export const updateLotHistory = async (lotId: string, newEvent: SupplyChainEvent
     revalidatePath(`/trace/${lotId}`);
     return data;
 }
-

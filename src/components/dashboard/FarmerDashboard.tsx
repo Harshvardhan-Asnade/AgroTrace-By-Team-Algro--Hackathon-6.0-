@@ -69,16 +69,18 @@ export default function FarmerDashboard() {
 
     try {
       const newLot = await createProduceLot(newLotData);
-      setLots(prevLots => [newLot, ...prevLots]);
+      setLots(prevLots => [newLot, ...prevLots].sort((a,b) => new Date(b.harvestDate).getTime() - new Date(a.harvestDate).getTime()));
       toast({ title: 'Success', description: 'New produce batch registered!' });
       (event.target as HTMLFormElement).reset();
     } catch (error: any) {
         console.error('Error registering batch:', error);
         let description = 'An unexpected error occurred. Please try again.';
         if (error.message.includes('relation "public.produce_lots" does not exist')) {
-            description = 'The "produce_lots" table was not found. Please create it in your Supabase dashboard and enable RLS.';
+            description = 'Database setup incomplete: The "produce_lots" table was not found. Please run the setup SQL in your Supabase dashboard.';
         } else if (error.message.includes('new row violates row-level security policy')) {
-            description = 'Cannot add new batch. Please check your Row Level Security policies for the "produce_lots" table.';
+            description = 'Database security issue: Cannot add new batch. Please check that you have enabled RLS and have the correct INSERT policy on the "produce_lots" table.';
+        } else {
+            description = error.message;
         }
         toast({
             variant: 'destructive',
