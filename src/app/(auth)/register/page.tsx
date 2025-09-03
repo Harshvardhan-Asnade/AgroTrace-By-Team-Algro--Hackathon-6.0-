@@ -44,11 +44,22 @@ export default function RegisterPage() {
     });
 
     if (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Registration Failed',
-        description: error.message,
-      });
+      if (error.message.includes('rate limit')) {
+         toast({
+          variant: 'destructive',
+          title: 'Registration Rate Limited',
+          description:
+            'Too many sign-up attempts. Please wait a minute or consider adjusting rate limits in your Supabase project settings for development.',
+          duration: 10000,
+        });
+      }
+      else {
+        toast({
+          variant: 'destructive',
+          title: 'Registration Failed',
+          description: error.message,
+        });
+      }
     } else if (data.user) {
       // Create a profile entry
       const { error: profileError } = await supabase.from('profiles').insert({ id: data.user.id, role });
