@@ -108,7 +108,10 @@ export default function FarmerDashboard() {
 
 
   const onSubmit = async (values: ProduceFormValues) => {
-    if (!user) return;
+    if (!user) {
+      toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to register a batch.' });
+      return;
+    }
     if (!signer || !walletAddress) {
       toast({ variant: 'destructive', title: 'Wallet Not Connected', description: 'Please connect your wallet to register a batch.'});
       connectWallet();
@@ -123,9 +126,13 @@ export default function FarmerDashboard() {
 
       // 2. Supabase DB Insert
       const lotData = {
-        id: batchId, // Use the ID from the blockchain
+        id: batchId,
         farmer_id: user.id,
-        ...values,
+        produce_name: values.produce_name,
+        origin: values.origin,
+        planting_date: values.planting_date,
+        harvest_date: values.harvest_date,
+        items_in_lot: values.items_in_lot,
       };
 
       const newLot = await createProduceLot(lotData);
@@ -136,11 +143,12 @@ export default function FarmerDashboard() {
         form.reset();
         setOpenDialog(false);
       } else {
+        // This error is now more meaningful because createProduceLot will log the specific Supabase error.
         throw new Error('Failed to save batch details to the database.');
       }
     } catch (error) {
        console.error("Error during batch registration:", error);
-       toast({ variant: 'destructive', title: 'Error', description: 'Failed to register produce. Check console for details.' });
+       toast({ variant: 'destructive', title: 'Registration Error', description: 'Failed to register the produce batch. Check the console for details.' });
     }
 
     setIsSubmitting(false);

@@ -50,8 +50,8 @@ export async function getLotById(lotId: string): Promise<ProduceLot | null> {
 
 // Function to create a new produce lot
 export async function createProduceLot(lotData: {
-    id: string;
-    farmer_id: string;
+    id: string; // From blockchain
+    farmer_id: string; // From auth user
     produce_name: string;
     origin: string;
     planting_date: string;
@@ -62,7 +62,7 @@ export async function createProduceLot(lotData: {
     status: 'Registered',
     timestamp: new Date().toISOString(),
     location: lotData.origin,
-    actor: lotData.farmer_id
+    actor: lotData.farmer_id // Use farmer's ID as the initial actor
   }];
 
   const payload = {
@@ -78,7 +78,8 @@ export async function createProduceLot(lotData: {
     .single();
 
   if (error) {
-    console.error('Error creating produce lot:', error.message);
+    // This will now log the specific Supabase error to the server console
+    console.error('Error creating produce lot in Supabase:', error.message);
     return null;
   }
   
