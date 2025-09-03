@@ -9,9 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Loader2, Package, CheckCircle, Truck } from 'lucide-react';
-import { User } from '@supabase/supabase-js';
+import type { User } from '@supabase/supabase-js';
 
 export default function DistributorDashboard() {
   const { user, loading: authLoading } = useAuth();

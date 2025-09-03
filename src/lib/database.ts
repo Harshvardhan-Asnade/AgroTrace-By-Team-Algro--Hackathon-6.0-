@@ -54,7 +54,7 @@ export async function createProduceLot(lotData: Omit<ProduceLot, 'status' | 'his
     status: 'Registered',
     timestamp: new Date().toISOString(),
     location: lotData.origin,
-    // The actor is the farmer who owns the batch.
+    // The actor is the farmer who owns the batch, identified by their user ID.
     actor: lotData.farmer_id 
   }];
 
