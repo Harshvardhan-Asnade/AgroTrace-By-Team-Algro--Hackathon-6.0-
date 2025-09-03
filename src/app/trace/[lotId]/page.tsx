@@ -8,14 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tractor, Box, Warehouse, Store, CheckCircle, Calendar, Package, MapPin, User, Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-type SupplyChainStatus =
-  | 'Registered'
-  | 'In-Transit to Distributor'
-  | 'Received by Distributor'
-  | 'In-Transit to Retailer'
-  | 'Received by Retailer'
-  | 'Available for Purchase';
-
 const statusIcons: Record<string, ReactNode> = {
   'Registered': <Tractor className="h-5 w-5" />,
   'In-Transit to Distributor': <Box className="h-5 w-5" />,
