@@ -35,12 +35,15 @@ export default function DashboardPage() {
         return <DistributorDashboard />;
       case 'retailer':
         return <RetailerDashboard />;
+      case 'admin':
+        // Redirect admin to the smart contract auditor page
+        router.push('/admin/smart-contract-auditor');
+        return null;
       default:
-        // For admin or other roles, maybe a summary view or redirect
         return (
           <div className="container mx-auto py-10 px-4">
-            <h1 className="text-3xl font-bold mb-4">Welcome, {user.name}</h1>
-            <p>Your dashboard is not yet configured.</p>
+            <h1 className="text-3xl font-bold mb-4">Welcome, {user.email}</h1>
+            <p>Your dashboard is not yet configured. Please contact support.</p>
           </div>
         );
     }

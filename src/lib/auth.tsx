@@ -1,12 +1,15 @@
 'use client';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { ethers } from 'ethers';
+import { supabase } from '@/lib/supabaseClient';
+import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 
 export type UserRole = 'farmer' | 'distributor' | 'retailer' | 'admin' | null;
 
 export type User = {
-  name: string;
+  id: string;
+  email: string | undefined;
   role: UserRole;
 };
 
@@ -19,7 +22,7 @@ interface AuthContextType {
   user: User | null;
   wallet: WalletState;
   login: (role: UserRole) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   connectWallet: () => Promise<void>;
   disconnectWallet: () => void;
   loading: boolean;
@@ -32,29 +35,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [wallet, setWallet] = useState<WalletState>({ address: null, provider: null });
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
-  useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem('agritrace-user');
-      if (storedUser) {
-        const parsedUser: User = JSON.parse(storedUser);
-        if (parsedUser.role) {
-          setUser(parsedUser);
-        } else {
-          localStorage.removeItem('agritrace-user');
-        }
-      }
-      const storedWalletAddress = localStorage.getItem('agritrace-wallet');
-      if(storedWalletAddress) {
-        setWallet(prev => ({...prev, address: storedWalletAddress}));
-      }
-    } catch (error) {
-      console.error("Failed to parse user from localStorage", error);
-      localStorage.removeItem('agritrace-user');
-      localStorage.removeItem('agritrace-wallet');
+  const handleSession = useCallback(async (session: Session | null) => {
+    if (session) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single();
+      
+      const user: User = {
+        id: session.user.id,
+        email: session.user.email,
+        role: profile?.role as UserRole,
+      };
+      setUser(user);
+    } else {
+      setUser(null);
     }
     setLoading(false);
   }, []);
+
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      await handleSession(session);
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+       handleSession(session);
+    });
+
+    const storedWalletAddress = localStorage.getItem('agritrace-wallet');
+    if(storedWalletAddress) {
+      setWallet(prev => ({...prev, address: storedWalletAddress}));
+    }
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, [handleSession]);
+
+  useEffect(() => {
+    if (!loading && !user && !['/login', '/register'].includes(pathname)) {
+        router.push('/login');
+    }
+  }, [user, loading, router, pathname]);
 
   const connectWallet = useCallback(async () => {
     if (typeof window.ethereum === 'undefined') {
@@ -78,24 +105,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setWallet({ address: null, provider: null });
   }, []);
 
-  const login = useCallback((role: UserRole) => {
-    if (!role) return;
-    const newUser: User = { name: `${role.charAt(0).toUpperCase() + role.slice(1)} User`, role };
-    localStorage.setItem('agritrace-user', JSON.stringify(newUser));
-    setUser(newUser);
-    router.push('/dashboard');
-  }, [router]);
-
-  const logout = useCallback(() => {
-    localStorage.removeItem('agritrace-user');
-    setUser(null);
-    disconnectWallet(); // Also disconnect wallet on logout
+  const login = (role: UserRole) => {
+    // This function will be handled by Supabase UI now,
+    // but we can keep it for any potential manual login flows in the future.
+    console.log('Redirecting to login page...');
     router.push('/login');
-  }, [router, disconnectWallet]);
+  };
+  
+  const logout = async () => {
+    setLoading(true);
+    await supabase.auth.signOut();
+    disconnectWallet();
+    setUser(null);
+    router.push('/login');
+    setLoading(false);
+  };
 
   return (
     <AuthContext.Provider value={{ user, wallet, login, logout, connectWallet, disconnectWallet, loading }}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };

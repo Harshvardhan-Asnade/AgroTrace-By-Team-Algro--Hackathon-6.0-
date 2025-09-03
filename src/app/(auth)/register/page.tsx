@@ -1,16 +1,72 @@
 'use client';
-
-import { useAuth, UserRole } from '@/lib/auth';
+import { useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Logo } from '@/components/Logo';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { UserRole } from '@/lib/auth';
 
 export default function RegisterPage() {
-  const { login } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState<UserRole>(null);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
 
-  const handleRegister = (role: UserRole) => {
-    login(role);
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!role) {
+      toast({
+        variant: 'destructive',
+        title: 'Registration Failed',
+        description: 'Please select a role.',
+      });
+      return;
+    }
+    setLoading(true);
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          role: role,
+        },
+      },
+    });
+
+    if (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Registration Failed',
+        description: error.message,
+      });
+    } else if (data.user) {
+      // Create a profile entry
+      const { error: profileError } = await supabase.from('profiles').insert({ id: data.user.id, role });
+       if (profileError) {
+          toast({
+            variant: 'destructive',
+            title: 'Profile Creation Failed',
+            description: profileError.message,
+          });
+        } else {
+           toast({
+            title: 'Registration Successful',
+            description: 'Please check your email to confirm your account.',
+          });
+          router.push('/login');
+        }
+    }
+    setLoading(false);
   };
 
   return (
@@ -20,19 +76,52 @@ export default function RegisterPage() {
           <Logo />
         </div>
         <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
-        <CardDescription>Join AgriTrace by selecting your role.</CardDescription>
+        <CardDescription>Join AgriTrace by creating your account.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <Button onClick={() => handleRegister('farmer')} className="w-full" size="lg">
-          Register as Farmer
-        </Button>
-        <Button onClick={() => handleRegister('distributor')} className="w-full" size="lg" variant="secondary">
-          Register as Distributor
-        </Button>
-        <Button onClick={() => handleRegister('retailer')} className="w-full" size="lg" variant="secondary">
-          Register as Retailer
-        </Button>
-        <div className="text-center text-sm text-muted-foreground">
+      <CardContent>
+        <form onSubmit={handleRegister} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="m@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              minLength={6}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="role">Your Role</Label>
+            <Select onValueChange={(value) => setRole(value as UserRole)} required>
+              <SelectTrigger id="role">
+                <SelectValue placeholder="Select your role..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="farmer">Farmer</SelectItem>
+                <SelectItem value="distributor">Distributor</SelectItem>
+                <SelectItem value="retailer">Retailer</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Create Account
+          </Button>
+        </form>
+         <div className="mt-4 text-center text-sm text-muted-foreground">
           Already have an account?{' '}
           <Link href="/login" className="font-semibold text-primary hover:underline">
             Log in
