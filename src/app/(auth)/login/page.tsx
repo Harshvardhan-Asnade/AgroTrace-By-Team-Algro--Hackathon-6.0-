@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const supabase = createClient();
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -38,19 +39,9 @@ export default function LoginPage() {
           title: 'Login Successful',
           description: 'Redirecting...',
         });
-        // Redirect based on role
-        const role = data.user?.user_metadata?.role;
-        if (role === 'farmer') {
-          router.push('/dashboard/farmer');
-        } else if (role === 'distributor') {
-          router.push('/dashboard/distributor');
-        } else if (role === 'retailer') {
-          router.push('/dashboard/retailer');
-        } else if (role === 'customer') {
-          router.push('/trace');
-        } else {
-          router.push('/');
-        }
+        // The auth listener in AuthProvider will handle the redirect.
+        // We just need to refresh the page to trigger it.
+        router.refresh(); 
       }
     } catch (error) {
       toast({

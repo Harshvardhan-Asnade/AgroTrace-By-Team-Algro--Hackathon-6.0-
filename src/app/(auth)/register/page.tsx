@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const supabase = createClient();
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -50,7 +51,7 @@ export default function RegisterPage() {
         });
       }
     } else if (data.user && data.user.identities && data.user.identities.length === 0) {
-      // This case handles when a user is created but no confirmation email is sent.
+      // This case handles when a user is created but no confirmation email is sent (e.g. email provider issue).
       // We can manually resend it.
       await supabase.auth.resend({ type: 'signup', email: email });
        toast({

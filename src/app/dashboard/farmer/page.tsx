@@ -138,13 +138,13 @@ export default function FarmerDashboard() {
         form.reset();
         setOpenDialog(false);
       } else {
-        // This error is now more meaningful because createProduceLot will log the specific Supabase error.
+        // This case should ideally not be hit if createProduceLot throws an error
         throw new Error('Failed to save batch details to the database.');
       }
     } catch (error) {
        console.error("Error during batch registration:", error);
        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
-       toast({ variant: 'destructive', title: 'Registration Error', description: `Failed to register the produce batch. ${errorMessage}` });
+       toast({ variant: 'destructive', title: 'Registration Error', description: `${errorMessage}` });
     } finally {
       setIsSubmitting(false);
     }
