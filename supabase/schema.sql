@@ -1,37 +1,37 @@
 
--- Create Produce Batches Table
+-- Drop the public.feedback table if it exists
+DROP TABLE IF EXISTS public.feedback;
+
+-- Create the "batches" table
 CREATE TABLE
-  produce_batches (
-    id UUID DEFAULT gen_random_uuid () PRIMARY KEY,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone ('utc'::TEXT, NOW()) NOT NULL,
-    farmer_id UUID REFERENCES auth.users (id) NOT NULL,
-    produce_name TEXT NOT NULL,
-    origin TEXT,
-    planting_date DATE,
-    harvest_date DATE,
-    items_in_lot INT NOT NULL,
-    status TEXT DEFAULT 'Registered', -- To track current state
-    history JSONB -- To store array of state change events
+  public.batches (
+    id uuid NOT NULL DEFAULT gen_random_uuid (),
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    farmer_id uuid NULL,
+    produce_name text NULL,
+    origin text NULL,
+    planting_date date NULL,
+    harvest_date date NULL,
+    items_in_lot integer NULL,
+    status text NULL,
+    history jsonb NULL,
+    CONSTRAINT batches_pkey PRIMARY KEY (id)
   );
 
--- Enable RLS
-ALTER TABLE produce_batches ENABLE ROW LEVEL SECURITY;
+-- Set up Row Level Security (RLS)
+-- Assumes you have a 'profiles' table with user roles.
+ALTER TABLE public.batches ENABLE ROW LEVEL SECURITY;
 
--- Policies for produce_batches
-CREATE POLICY "Allow public read access" ON produce_batches FOR
-SELECT
-  USING (TRUE);
+-- Allow public read access to all rows.
+-- Consumers who are not logged in need to be able to trace lots.
+CREATE POLICY "Allow public read access" ON public.batches
+  FOR SELECT USING (true);
 
-CREATE POLICY "Allow authenticated users to insert" ON produce_batches FOR INSERT
-TO authenticated
-WITH
-  CHECK (TRUE);
+-- Allow users to insert new batches for themselves.
+-- This policy assumes the farmer_id is being set to the currently authenticated user's ID.
+CREATE POLICY "Allow authenticated users to insert for themselves" ON public.batches
+  FOR INSERT WITH CHECK (auth.uid() = farmer_id);
 
-CREATE POLICY "Allow users to update their own batches" ON produce_batches FOR
-UPDATE
-  USING (auth.uid () = farmer_id);
-
--- Grant usage on the public schema to the postgres user
-GRANT USAGE ON SCHEMA public TO postgres;
--- Grant execute permission on the pgrst_watch function to the authenticated role
-GRANT EXECUTE ON FUNCTION public.pgrst_watch() TO authenticated;
+-- Allow users to update their own batches.
+CREATE POLICY "Allow owner to update their own batches" ON public.batches
+  FOR UPDATE USING (auth.uid() = farmer_id);
