@@ -1,4 +1,5 @@
-import { getLotById } from '@/lib/mock-data';
+
+import { getLotById } from '@/lib/database';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { notFound } from 'next/navigation';
 import { Tractor, Box, Warehouse, Store, CheckCircle, Calendar, Package, MapPin, FileText, User, MessageSquare } from 'lucide-react';
@@ -16,8 +17,11 @@ const statusIcons: Record<SupplyChainStatus, React.ReactNode> = {
   'Available for Purchase': <CheckCircle className="h-5 w-5" />,
 };
 
-export default function TraceLotPage({ params }: { params: { lotId: string } }) {
-  const lot = getLotById(params.lotId);
+// Make sure this page is dynamically rendered
+export const dynamic = 'force-dynamic';
+
+export default async function TraceLotPage({ params }: { params: { lotId: string } }) {
+  const lot = await getLotById(params.lotId);
 
   if (!lot) {
     notFound();
@@ -36,7 +40,7 @@ export default function TraceLotPage({ params }: { params: { lotId: string } }) 
           <div className="flex items-center gap-2"><Calendar className="text-primary h-5 w-5"/> <div><p className="font-bold">Harvested</p><p>{new Date(lot.harvestDate).toLocaleDateString()}</p></div></div>
           <div className="flex items-center gap-2"><Package className="text-primary h-5 w-5"/> <div><p className="font-bold">Lot Size</p><p>{lot.itemCount} items</p></div></div>
           <div className="flex items-center gap-2"><User className="text-primary h-5 w-5"/> <div><p className="font-bold">Farmer</p><p>{lot.farmer.name}</p></div></div>
-          {lot.certificates.length > 0 && (
+          {lot.certificates && lot.certificates.length > 0 && (
             <div className="flex items-center gap-2"><FileText className="text-primary h-5 w-5"/> <div><p className="font-bold">Certificates</p><p>{lot.certificates.map(c => c.name).join(', ')}</p></div></div>
           )}
         </CardContent>
