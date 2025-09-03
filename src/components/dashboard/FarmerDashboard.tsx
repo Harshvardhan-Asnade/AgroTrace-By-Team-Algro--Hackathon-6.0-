@@ -55,7 +55,7 @@ export default function FarmerDashboard() {
       plantingDate: formData.get('plantingDate') as string,
       harvestDate: formData.get('harvestDate') as string,
       itemCount: parseInt(formData.get('itemCount') as string),
-      farmer: { id: user.id, name: user.email },
+      farmer: { id: user.id, name: user.email }, // Correctly include the user ID
       certificates: [],
       history: [
         {
@@ -75,7 +75,7 @@ export default function FarmerDashboard() {
     } catch (error: any) {
         console.error('Error registering batch:', error);
         let description = 'An unexpected error occurred. Please try again.';
-        if (error.message.includes('relation "public.produce_lots" does not exist')) {
+        if (error.message.includes('relation "public.produce_lots" does not exist') || error.message.includes("schema cache")) {
             description = 'Database setup incomplete: The "produce_lots" table was not found. Please run the setup SQL in your Supabase dashboard.';
         } else if (error.message.includes('new row violates row-level security policy')) {
             description = 'Database security issue: Cannot add new batch. Please check that you have enabled RLS and have the correct INSERT policy on the "produce_lots" table.';
