@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
-import { createProduceLot, getLotsForFarmer } from '@/lib/database';
+import { createProduceLot, getLotsForFarmer, refreshSchemaCache } from '@/lib/database';
 import type { ProduceLot } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,6 +27,8 @@ export default function FarmerDashboard() {
     if (user) {
       const fetchLots = async () => {
         setLoading(true);
+        // Proactively refresh schema cache before fetching data
+        await refreshSchemaCache();
         const farmerLots = await getLotsForFarmer(user.id);
         setLots(farmerLots);
         setLoading(false);
