@@ -31,12 +31,30 @@ const prompt = ai.definePrompt({
   name: 'smartContractPrompt',
   input: {schema: SmartContractInputSchema},
   output: {schema: SmartContractOutputSchema},
-  prompt: `You are an expert in smart contract development. Based on the provided produce details and tracking requirements, generate a smart contract code suggestion.
+  prompt: `You are an expert in Solidity smart contract development for supply chain management. Based on the provided produce details and tracking requirements, generate a complete and robust Solidity smart contract.
 
-Produce Details: {{{produceDetails}}}
-Tracking Requirements: {{{trackingRequirements}}}
+The contract should be named 'AgriTrace' and use SPDX-License-Identifier: MIT and pragma solidity ^0.8.20;
 
-Smart Contract Code:`,
+It must include the following features:
+1.  A 'HistoryEvent' struct with fields: status (string), timestamp (uint256), location (string), actor (string).
+2.  A 'ProduceLot' struct with fields: lotId (string), name (string), farmer (address), distributor (address), retailer (address), and a dynamic array of HistoryEvent structs called 'history'.
+3.  A mapping from a lot ID (string) to the ProduceLot struct.
+4.  An 'owner' state variable.
+5.  Events for 'BatchMinted', 'TransferredToDistributor', and 'TransferredToRetailer', each emitting the lotId and relevant addresses.
+6.  A constructor that sets the contract deployer as the owner.
+7.  A 'mintBatch' function that can only be called by a farmer. It should create a new ProduceLot, store it, and emit the 'BatchMinted' event. It should take lotId, name, and initial history as arguments.
+8.  A 'transferToDistributor' function that takes a lotId and the distributor's address. It should update the lot's distributor field and add a new history event.
+9.  A 'transferToRetailer' function that takes a lotId and the retailer's address. It should update the lot's retailer field and add a new history event.
+10. A 'getLot' view function that returns all details of a specific lot.
+
+Produce Details for this contract:
+{{{produceDetails}}}
+
+Tracking Requirements for this contract:
+{{{trackingRequirements}}}
+
+Generate the full Solidity smart contract code below. Do not include any explanations, just the code.
+`,
 });
 
 const generateSmartContractFlow = ai.defineFlow(
