@@ -152,8 +152,7 @@ export default function RetailerDashboard() {
                 )}
               </TableBody>
             </Table>
-          </Table>
-        </CardContent>
+          </CardContent>
         </Card>
       </div>
     </div>
