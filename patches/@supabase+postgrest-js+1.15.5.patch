@@ -1,0 +1,36 @@
+diff --git a/node_modules/@supabase/postgrest-js/dist/module/PostgrestClient.js b/node_modules/@supabase/postgrest-js/dist/module/PostgrestClient.js
+index 9247012..828e853 100644
+--- a/node_modules/@supabase/postgrest-js/dist/module/PostgrestClient.js
++++ b/node_modules/@supabase/postgrest-js/dist/module/PostgrestClient.js
+@@ -29,6 +29,7 @@ class PostgrestClient {
+             apikey: this.apikey,
+             'Content-Type': 'application/json',
+             ...this.headers,
++            'Accept-Profile': this.schema,
+         };
+         if (this.schema) {
+             headers['Accept-Profile'] = this.schema;
+diff --git a/node_modules/@supabase/postgrest-js/dist/module/lib/PostgrestRpcBuilder.js b/node_modules/@supabase/postgrest-js/dist/module/lib/PostgrestRpcBuilder.js
+index e3901b0..c22d110 100644
+--- a/node_modules/@supabase/postgrest-js/dist/module/lib/PostgrestRpcBuilder.js
++++ b/node_modules/@supabase/postgrest-js/dist/module/lib/PostgrestRpcBuilder.js
+@@ -35,6 +35,7 @@ class PostgrestRpcBuilder extends PostgrestBuilder {
+         if (this.schema) {
+             // https://github.com/PostgREST/postgrest/issues/1653
+             this.headers['Accept-Profile'] = this.schema;
++            this.headers['Content-Profile'] = this.schema;
+         }
+         if (method !== 'GET' && method !== 'HEAD') {
+             this.headers['Content-Type'] = 'application/json';
+diff --git a/node_modules/@supabase/postgrest-js/dist/module/lib/PostgrestTransformBuilder.js b/node_modules/@supabase/postgrest-js/dist/module/lib/PostgrestTransformBuilder.js
+index 9382283..f6f2172 100644
+--- a/node_modules/@supabase/postgrest-js/dist/module/lib/PostgrestTransformBuilder.js
++++ b/node_modules/@supabase/postgrest-js/dist/module/lib/PostgrestTransformBuilder.js
+@@ -74,6 +74,7 @@ class PostgrestTransformBuilder extends PostgrestBuilder {
+         }
+         if (this.schema) {
+             this.headers['Accept-Profile'] = this.schema;
++            this.headers['Content-Profile'] = this.schema;
+         }
+         if (this.method !== 'GET' && this.method !== 'HEAD') {
+             this.headers['Content-Type'] = 'application/json';
