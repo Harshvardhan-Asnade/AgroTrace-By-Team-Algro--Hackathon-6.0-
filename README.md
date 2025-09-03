@@ -73,4 +73,3 @@ Public QR Access → Customers read-only access (no login).
 
 🔲 Multi-chain deployment (Polygon, Optimism)
 
-🔲 Mobile app (React Native)
