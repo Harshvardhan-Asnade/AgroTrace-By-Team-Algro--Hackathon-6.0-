@@ -74,7 +74,7 @@ export async function createProduceLot(lotData: {
 
     const { data, error } = await supabase
       .from('batches')
-      .insert(payload) // insert the complete payload
+      .insert(payload)
       .select()
       .single();
 
