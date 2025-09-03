@@ -41,8 +41,8 @@ export default function FarmerDashboard() {
       toast({ variant: 'destructive', title: 'Wallet not connected', description: 'Please connect your wallet to register a batch.' });
       return;
     }
-    if (!user) {
-       toast({ variant: 'destructive', title: 'Not logged in', description: 'You must be logged in.' });
+    if (!user || !user.email) {
+       toast({ variant: 'destructive', title: 'Not logged in', description: 'You must be logged in to register a batch.' });
       return;
     }
     setFormSubmitting(true);
@@ -55,14 +55,14 @@ export default function FarmerDashboard() {
       plantingDate: formData.get('plantingDate') as string,
       harvestDate: formData.get('harvestDate') as string,
       itemCount: parseInt(formData.get('itemCount') as string),
-      farmer: { id: user.id, name: user.email || 'Unknown Farmer' },
+      farmer: { id: user.id, name: user.email },
       certificates: [],
       history: [
         {
           status: 'Registered' as const,
           timestamp: new Date().toISOString(),
           location: formData.get('origin') as string,
-          actor: user.email || 'Unknown Farmer',
+          actor: user.email,
         },
       ],
     };
@@ -73,6 +73,7 @@ export default function FarmerDashboard() {
       toast({ title: 'Success', description: 'New produce batch registered!' });
       (event.target as HTMLFormElement).reset();
     } catch (error: any) {
+        console.error('Error registering batch:', error);
         let description = 'An unexpected error occurred. Please try again.';
         if (error.message.includes('relation "public.produce_lots" does not exist')) {
             description = 'The "produce_lots" table was not found. Please create it in your Supabase dashboard and enable RLS.';
@@ -85,7 +86,6 @@ export default function FarmerDashboard() {
             description: description,
             duration: 9000
         });
-        console.error(error);
     } finally {
       setFormSubmitting(false);
     }
