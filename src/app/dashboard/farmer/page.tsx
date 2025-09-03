@@ -101,7 +101,6 @@ export default function FarmerDashboard() {
       // 2. Supabase DB Insert
       const lotData = {
         id: batchId,
-        farmer_id: user.id,
         ...values,
       };
 

@@ -54,7 +54,6 @@ export async function getLotById(lotId: string): Promise<ProduceLot | null> {
 // Function to create a new produce lot
 export async function createProduceLot(lotData: {
     id: string; // From blockchain
-    farmer_id: string; // From auth user
     produce_name: string;
     origin: string;
     planting_date: string;
@@ -62,16 +61,24 @@ export async function createProduceLot(lotData: {
     items_in_lot: number;
 }): Promise<ProduceLot | null> {
   const supabase = createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error('User is not authenticated.');
+  }
+
   try {
     const initialHistory = [{
       status: 'Registered',
       timestamp: new Date().toISOString(),
       location: lotData.origin,
-      actor: lotData.farmer_id
+      actor: user.id
     }];
 
     const payload = {
       ...lotData,
+      farmer_id: user.id,
       status: 'Registered',
       history: initialHistory,
     };
