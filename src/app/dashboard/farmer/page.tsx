@@ -212,7 +212,7 @@ export default function FarmerDashboard() {
   
   return (
     <motion.div 
-      className="bg-muted/20 min-h-screen"
+      className="bg-muted/40 min-h-screen"
       initial="hidden"
       animate="visible"
       variants={containerVariants}

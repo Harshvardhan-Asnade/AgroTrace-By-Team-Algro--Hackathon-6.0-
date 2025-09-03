@@ -99,7 +99,7 @@ export default function Home() {
           </motion.p>
           <motion.div variants={itemVariants}>
             <Link href="/register">
-              <Button size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 text-lg py-7 px-10 rounded-full shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
+              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 text-lg py-7 px-10 rounded-full shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
                 Get Started for Free <ArrowRight className="ml-2" />
               </Button>
             </Link>
