@@ -1,3 +1,4 @@
+
 import { Logo } from "./Logo";
 import Link from "next/link";
 
@@ -14,7 +15,7 @@ export function Footer() {
           <Link href="/dashboard" className="hover:text-foreground">Dashboard</Link>
         </div>
         <p className="text-sm text-muted-foreground">
-          © {new Date().getFullYear()} AgriTrace. All rights reserved.
+          © {new Date().getFullYear()} AgroTrace. All rights reserved.
         </p>
       </div>
     </footer>

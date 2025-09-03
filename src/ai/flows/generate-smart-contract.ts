@@ -1,3 +1,4 @@
+
 // The code is a Next.js server action, so we must mark it as such.
 'use server';
 
@@ -33,7 +34,7 @@ const prompt = ai.definePrompt({
   output: {schema: SmartContractOutputSchema},
   prompt: `You are an expert in Solidity smart contract development for supply chain management. Based on the provided produce details and tracking requirements, generate a complete and robust Solidity smart contract.
 
-The contract should be named 'AgriTrace' and use SPDX-License-Identifier: MIT and pragma solidity ^0.8.20;
+The contract should be named 'AgroTrace' and use SPDX-License-Identifier: MIT and pragma solidity ^0.8.20;
 
 It must include the following features:
 1.  A 'HistoryEvent' struct with fields: status (string), timestamp (uint256), location (string), actor (string).

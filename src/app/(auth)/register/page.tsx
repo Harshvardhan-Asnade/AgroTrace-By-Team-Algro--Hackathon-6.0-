@@ -12,12 +12,12 @@ import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { UserRole } from '@/lib/auth';
+import { UserRole } from '@/lib/types';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<UserRole>(null);
+  const [role, setRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -79,7 +79,7 @@ export default function RegisterPage() {
           <Logo />
         </div>
         <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
-        <CardDescription>Join AgriTrace by creating your account.</CardDescription>
+        <CardDescription>Join AgroTrace by creating your account.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleRegister} className="space-y-4">

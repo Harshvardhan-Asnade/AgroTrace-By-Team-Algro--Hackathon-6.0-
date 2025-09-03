@@ -1,3 +1,4 @@
+
 'use client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -93,7 +94,7 @@ export default function Home() {
             Trust in Every Bite
           </motion.h1>
           <motion.p variants={itemVariants} className="text-lg md:text-2xl max-w-3xl mb-10 text-muted-foreground">
-            AgriTrace brings unparalleled transparency to the food supply chain.
+            AgroTrace brings unparalleled transparency to the food supply chain.
             Know the journey of your food from farm to fork.
           </motion.p>
           <motion.div variants={itemVariants}>
@@ -117,7 +118,7 @@ export default function Home() {
       >
         <div className="container mx-auto px-4 text-center">
           <motion.h2 variants={itemVariants} className="text-3xl md:text-5xl font-bold font-headline mb-4">
-            How AgriTrace Works
+            How AgroTrace Works
           </motion.h2>
           <motion.p variants={itemVariants} className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-16">
             We simplify supply chain transparency with a secure, three-step process powered by blockchain technology.
@@ -142,7 +143,7 @@ export default function Home() {
         </div>
       </motion.section>
 
-      {/* Why AgriTrace Section */}
+      {/* Why AgroTrace Section */}
       <motion.section 
         className="w-full py-20 md:py-28 bg-secondary"
         initial="hidden"
@@ -162,9 +163,9 @@ export default function Home() {
             />
           </motion.div>
           <motion.div variants={itemVariants}>
-            <h2 className="text-3xl md:text-5xl font-bold font-headline mb-6">Why AgriTrace?</h2>
+            <h2 className="text-3xl md:text-5xl font-bold font-headline mb-6">Why AgroTrace?</h2>
             <p className="text-lg text-muted-foreground mb-8">
-              In a world where consumers demand to know more about their food, AgriTrace provides the missing link of trust and verification. Our platform protects brand integrity, reduces fraud, and empowers every stakeholder with undeniable proof of provenance.
+              In a world where consumers demand to know more about their food, AgroTrace provides the missing link of trust and verification. Our platform protects brand integrity, reduces fraud, and empowers every stakeholder with undeniable proof of provenance.
             </p>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
