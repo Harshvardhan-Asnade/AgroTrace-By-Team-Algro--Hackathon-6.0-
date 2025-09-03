@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { PT_Sans } from 'next/font/google';
 import './globals.css';
 import { AppProvider } from '@/components/AppProvider';
+import { AuthProvider } from '@/lib/auth';
 
 const ptSans = PT_Sans({
   subsets: ['latin'],
@@ -25,7 +26,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${ptSans.variable} h-full scroll-smooth`}>
       <body className="font-body antialiased flex flex-col min-h-screen">
-        <AppProvider>{children}</AppProvider>
+        <AuthProvider>
+          <AppProvider>{children}</AppProvider>
+        </AuthProvider>
       </body>
     </html>
   );

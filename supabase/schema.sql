@@ -1,37 +1,37 @@
 
--- Drop existing tables if they exist to ensure a clean slate
-drop table if exists public.produce_lots cascade;
+-- Create Produce Batches Table
+CREATE TABLE
+  produce_batches (
+    id UUID DEFAULT gen_random_uuid () PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone ('utc'::TEXT, NOW()) NOT NULL,
+    farmer_id UUID REFERENCES auth.users (id) NOT NULL,
+    produce_name TEXT NOT NULL,
+    origin TEXT,
+    planting_date DATE,
+    harvest_date DATE,
+    items_in_lot INT NOT NULL,
+    status TEXT DEFAULT 'Registered', -- To track current state
+    history JSONB -- To store array of state change events
+  );
 
--- Create the main table for produce lots
-create table public.produce_lots (
-  id text primary key,
-  name text not null,
-  origin text not null,
-  plantingDate text not null,
-  harvestDate text not null,
-  itemCount int not null,
-  farmer jsonb not null,
-  certificates jsonb,
-  history jsonb
-);
+-- Enable RLS
+ALTER TABLE produce_batches ENABLE ROW LEVEL SECURITY;
 
--- Enable Row Level Security (RLS)
-alter table public.produce_lots enable row level security;
+-- Policies for produce_batches
+CREATE POLICY "Allow public read access" ON produce_batches FOR
+SELECT
+  USING (TRUE);
 
--- Create policies for produce_lots table
--- Allow anyone to read the data (for public trace pages)
-create policy "Allow public read access" on public.produce_lots for select using (true);
--- Allow only authenticated users to insert/update/delete their own data
-create policy "Allow authenticated users to manage their data" on public.produce_lots for all
-using (auth.role() = 'authenticated')
-with check (auth.role() = 'authenticated');
+CREATE POLICY "Allow authenticated users to insert" ON produce_batches FOR INSERT
+TO authenticated
+WITH
+  CHECK (TRUE);
 
--- Grant usage on the public schema to the postgres user and anon/authenticated roles
-grant usage on schema public to postgres, anon, authenticated;
+CREATE POLICY "Allow users to update their own batches" ON produce_batches FOR
+UPDATE
+  USING (auth.uid () = farmer_id);
 
--- Grant all privileges on the produce_lots table to the postgres user and anon/authenticated roles
-grant all on table public.produce_lots to postgres, anon, authenticated;
-
--- Grant permission to use the pgrst_watch function to the anon role
--- This is necessary for the application to be able to refresh the schema cache
-grant execute on function public.pgrst_watch() to anon;
+-- Grant usage on the public schema to the postgres user
+GRANT USAGE ON SCHEMA public TO postgres;
+-- Grant execute permission on the pgrst_watch function to the authenticated role
+GRANT EXECUTE ON FUNCTION public.pgrst_watch() TO authenticated;

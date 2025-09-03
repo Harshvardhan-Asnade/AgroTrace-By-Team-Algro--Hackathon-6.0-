@@ -1,27 +1,38 @@
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth';
+import { Loader2 } from 'lucide-react';
 
 export default function DashboardPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading) {
+      if (user) {
+        const role = user.user_metadata.role;
+        if (role === 'farmer') {
+          router.replace('/dashboard/farmer');
+        } else if (role === 'distributor') {
+          router.replace('/dashboard/distributor');
+        } else if (role === 'retailer') {
+          router.replace('/dashboard/retailer');
+        } else {
+          router.replace('/unauthorized');
+        }
+      } else {
+        router.replace('/login');
+      }
+    }
+  }, [user, loading, router]);
+
   return (
-    <div className="container mx-auto py-10 px-4 flex flex-col items-center justify-center text-center">
-        <Card className="w-full max-w-lg">
-            <CardHeader>
-                <CardTitle>Feature Not Available</CardTitle>
-                <CardDescription>
-                    The dashboard functionality requires a database connection, which has been removed from this version of the application.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <p className="mb-4 text-muted-foreground">
-                    You can still explore other features of the site.
-                </p>
-                <Button asChild>
-                    <Link href="/">Return to Homepage</Link>
-                </Button>
-            </CardContent>
-        </Card>
+    <div className="flex h-screen w-full items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin" />
+      <p className="ml-4">Loading your dashboard...</p>
     </div>
   );
 }
