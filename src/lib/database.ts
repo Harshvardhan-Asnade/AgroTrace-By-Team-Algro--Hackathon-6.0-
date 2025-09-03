@@ -49,7 +49,7 @@ export async function getLotById(lotId: string): Promise<ProduceLot | null> {
 }
 
 // Function to create a new produce lot
-export async function createProduceLot(lotData: Omit<ProduceLot, 'status' | 'history' | 'created_at' | 'items_in_lot'> & { items_in_lot: number }): Promise<ProduceLot | null> {
+export async function createProduceLot(lotData: Omit<ProduceLot, 'status' | 'history' | 'created_at'> & { items_in_lot: number }): Promise<ProduceLot | null> {
   const initialHistory = [{
     status: 'Registered',
     timestamp: new Date().toISOString(),
@@ -58,21 +58,21 @@ export async function createProduceLot(lotData: Omit<ProduceLot, 'status' | 'his
     actor: lotData.farmer_id 
   }];
 
+  const payload = {
+    id: lotData.id,
+    farmer_id: lotData.farmer_id,
+    produce_name: lotData.produce_name,
+    origin: lotData.origin,
+    planting_date: lotData.planting_date,
+    harvest_date: lotData.harvest_date,
+    items_in_lot: lotData.items_in_lot,
+    status: 'Registered',
+    history: initialHistory,
+  };
+
   const { data, error } = await supabase
     .from('batches')
-    .insert([
-      {
-        id: lotData.id,
-        farmer_id: lotData.farmer_id,
-        produce_name: lotData.produce_name,
-        origin: lotData.origin,
-        planting_date: lotData.planting_date,
-        harvest_date: lotData.harvest_date,
-        items_in_lot: lotData.items_in_lot,
-        status: 'Registered',
-        history: initialHistory,
-      },
-    ])
+    .insert([payload])
     .select()
     .single();
 
