@@ -55,7 +55,7 @@ export default function FarmerDashboard() {
       plantingDate: formData.get('plantingDate') as string,
       harvestDate: formData.get('harvestDate') as string,
       itemCount: parseInt(formData.get('itemCount') as string),
-      farmer: { id: user.id, name: user.email }, // Correctly include the user ID
+      farmer: { id: user.id, name: user.email },
       certificates: [],
       history: [
         {
@@ -69,23 +69,15 @@ export default function FarmerDashboard() {
 
     try {
       const newLot = await createProduceLot(newLotData);
-      setLots(prevLots => [newLot, ...prevLots].sort((a,b) => new Date(b.harvestDate).getTime() - new Date(a.harvestDate).getTime()));
+      setLots(prevLots => [newLot, ...prevLots]);
       toast({ title: 'Success', description: 'New produce batch registered!' });
       (event.target as HTMLFormElement).reset();
     } catch (error: any) {
-        console.error('Error registering batch:', error);
-        let description = 'An unexpected error occurred. Please try again.';
-        if (error.message.includes('relation "public.produce_lots" does not exist') || error.message.includes("schema cache")) {
-            description = 'Database setup incomplete: The "produce_lots" table was not found. Please run the setup SQL in your Supabase dashboard.';
-        } else if (error.message.includes('new row violates row-level security policy')) {
-            description = 'Database security issue: Cannot add new batch. Please check that you have enabled RLS and have the correct INSERT policy on the "produce_lots" table.';
-        } else {
-            description = error.message;
-        }
+        console.error('Detailed error registering batch:', error);
         toast({
             variant: 'destructive',
             title: 'Registration Failed',
-            description: description,
+            description: error.message,
             duration: 9000
         });
     } finally {

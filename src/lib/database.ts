@@ -22,7 +22,7 @@ export const getLotsByStatus = async (statuses: SupplyChainStatus[]): Promise<Pr
     return lastEvent && statuses.includes(lastEvent.status);
   });
 
-  return filteredData;
+  return filteredData.sort((a,b) => new Date(b.harvestDate).getTime() - new Date(a.harvestDate).getTime());
 };
 
 export const getLotsForFarmer = async (farmerId: string): Promise<ProduceLot[]> => {
@@ -56,6 +56,7 @@ export const getLotById = async (id: string): Promise<ProduceLot | null> => {
 };
 
 export const createProduceLot = async (lotData: Omit<ProduceLot, 'history'> & { history: SupplyChainEvent[] }) => {
+    console.log("Attempting to create produce lot with data:", lotData);
     const { data, error } = await supabase
         .from('produce_lots')
         .insert([lotData])
@@ -63,9 +64,12 @@ export const createProduceLot = async (lotData: Omit<ProduceLot, 'history'> & { 
         .single();
 
     if (error) {
-        console.error('Error creating produce lot:', error.message);
+        console.error('Error creating produce lot in database.ts:', error);
+        // Throw the specific error message from Supabase
         throw new Error(error.message);
     }
+
+    console.log("Successfully created lot:", data);
     revalidatePath('/dashboard');
     return data;
 };
