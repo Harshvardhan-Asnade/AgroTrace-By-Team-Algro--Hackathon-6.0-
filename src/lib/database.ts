@@ -66,13 +66,7 @@ export async function createProduceLot(lotData: {
   }];
 
   const payload = {
-    id: lotData.id,
-    farmer_id: lotData.farmer_id,
-    produce_name: lotData.produce_name,
-    origin: lotData.origin,
-    planting_date: lotData.planting_date,
-    harvest_date: lotData.harvest_date,
-    items_in_lot: lotData.items_in_lot,
+    ...lotData,
     status: 'Registered',
     history: initialHistory,
   };
