@@ -24,7 +24,7 @@ export default function FarmerDashboard() {
 
   const fetchLots = async () => {
     if (user) {
-      await refreshSchemaCache();
+      await refreshSchemaCache(); // Proactively refresh the cache
       const farmerLots = await getLotsForFarmer(user.id);
       setLots(farmerLots);
       setLoading(false);
@@ -66,7 +66,6 @@ export default function FarmerDashboard() {
       await createProduceLot(newLotData);
       toast({ title: 'Success', description: 'New produce batch registered!' });
       (event.target as HTMLFormElement).reset();
-      // Refetch lots to show the new one
       await fetchLots(); 
     } catch (error: any) {
         console.error('Detailed error registering batch:', error);
@@ -84,7 +83,10 @@ export default function FarmerDashboard() {
   const stats = {
     totalBatches: lots.length,
     totalItems: lots.reduce((acc, lot) => acc + lot.itemCount, 0),
-    inTransit: lots.filter(lot => lot.history[lot.history.length-1].status.startsWith('In-Transit')).length,
+    inTransit: lots.filter(lot => {
+      const latestStatus = lot.history[lot.history.length - 1]?.status;
+      return latestStatus === 'In-Transit to Distributor' || latestStatus === 'In-Transit to Retailer';
+    }).length,
   };
 
   if (loading) {
