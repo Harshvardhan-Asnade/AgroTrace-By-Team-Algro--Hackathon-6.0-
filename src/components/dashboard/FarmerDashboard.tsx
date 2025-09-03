@@ -10,9 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { QrCode, PlusCircle, Leaf, Package, AlertTriangle, Loader2 } from 'lucide-react';
+import { QrCode, PlusCircle, Leaf, Package, Truck, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '../ui/skeleton';
 
@@ -23,17 +22,18 @@ export default function FarmerDashboard() {
   const [formSubmitting, setFormSubmitting] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
+  const fetchLots = async () => {
     if (user) {
-      const fetchLots = async () => {
-        setLoading(true);
-        await refreshSchemaCache();
-        const farmerLots = await getLotsForFarmer(user.id);
-        setLots(farmerLots);
-        setLoading(false);
-      };
-      fetchLots();
+      await refreshSchemaCache();
+      const farmerLots = await getLotsForFarmer(user.id);
+      setLots(farmerLots);
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
+    setLoading(true);
+    fetchLots();
   }, [user]);
 
   const handleRegisterProduce = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -63,10 +63,11 @@ export default function FarmerDashboard() {
     };
 
     try {
-      const newLot = await createProduceLot(newLotData);
-      setLots(prevLots => [newLot, ...prevLots]);
+      await createProduceLot(newLotData);
       toast({ title: 'Success', description: 'New produce batch registered!' });
       (event.target as HTMLFormElement).reset();
+      // Refetch lots to show the new one
+      await fetchLots(); 
     } catch (error: any) {
         console.error('Detailed error registering batch:', error);
         toast({
@@ -89,8 +90,8 @@ export default function FarmerDashboard() {
   if (loading) {
     return (
         <div className="container mx-auto py-10 px-4 space-y-8">
-            <Skeleton className="h-10 w-1/3" />
-            <div className="grid gap-4 md:grid-cols-3">
+            <Skeleton className="h-10 w-1/3 mb-8" />
+            <div className="grid gap-6 md:grid-cols-3">
                 <Skeleton className="h-28" />
                 <Skeleton className="h-28" />
                 <Skeleton className="h-28" />
@@ -131,7 +132,7 @@ export default function FarmerDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Batches In Transit</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            <Truck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.inTransit}</div>
@@ -220,7 +221,7 @@ export default function FarmerDashboard() {
                 ) : (
                     <TableRow>
                         <TableCell colSpan={5} className="text-center h-24">
-                            You haven't registered any batches yet.
+                            You haven’t registered any batches yet.
                         </TableCell>
                     </TableRow>
                 )}
@@ -232,4 +233,3 @@ export default function FarmerDashboard() {
     </div>
   );
 }
-

@@ -73,8 +73,8 @@ export default function DistributorDashboard() {
   if (loading) {
     return (
         <div className="container mx-auto py-10 px-4 space-y-8">
-            <Skeleton className="h-10 w-1/3" />
-            <div className="grid gap-4 md:grid-cols-3">
+            <Skeleton className="h-10 w-1/3 mb-8" />
+            <div className="grid gap-6 md:grid-cols-3">
                 <Skeleton className="h-28" />
                 <Skeleton className="h-28" />
                 <Skeleton className="h-28" />
@@ -205,4 +205,3 @@ export default function DistributorDashboard() {
     </div>
   );
 }
-

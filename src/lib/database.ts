@@ -35,6 +35,7 @@ export const getLotsByStatus = async (statuses: SupplyChainStatus[]): Promise<Pr
   }
   
   const filteredData = data.filter(lot => {
+    if (!lot.history || lot.history.length === 0) return false;
     const lastEvent = lot.history[lot.history.length - 1];
     return lastEvent && statuses.includes(lastEvent.status);
   });
@@ -102,7 +103,6 @@ export const createProduceLot = async (lotData: Omit<ProduceLot, 'id' | 'certifi
         throw new Error(error.message);
     }
 
-    console.log("Successfully created lot:", data);
     revalidatePath('/dashboard');
     return data;
 };
@@ -131,4 +131,3 @@ export const updateLotHistory = async (lotId: string, newEvent: SupplyChainEvent
     revalidatePath(`/trace/${lotId}`);
     return data;
 };
-
