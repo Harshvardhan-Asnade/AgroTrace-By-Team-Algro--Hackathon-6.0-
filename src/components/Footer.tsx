@@ -12,7 +12,6 @@ export function Footer() {
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground mb-4 md:mb-0">
           <Link href="/#features" className="hover:text-foreground">Features</Link>
           <Link href="/trace" className="hover:text-foreground">Trace</Link>
-          <Link href="/dashboard" className="hover:text-foreground">Dashboard</Link>
         </div>
         <p className="text-sm text-muted-foreground">
           © {new Date().getFullYear()} AgroTrace. All rights reserved.

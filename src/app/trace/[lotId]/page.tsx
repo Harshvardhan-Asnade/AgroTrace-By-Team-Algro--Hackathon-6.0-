@@ -1,12 +1,17 @@
 
-
-import { getLotById } from '@/lib/database';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { notFound } from 'next/navigation';
 import { Tractor, Box, Warehouse, Store, CheckCircle, Calendar, Package, MapPin, User } from 'lucide-react';
-import type { SupplyChainStatus } from '@/lib/types';
+import type { ReactNode } from 'react';
 
-const statusIcons: Record<SupplyChainStatus, React.ReactNode> = {
+type SupplyChainStatus =
+  | 'Registered'
+  | 'In-Transit to Distributor'
+  | 'Received by Distributor'
+  | 'In-Transit to Retailer'
+  | 'Received by Retailer'
+  | 'Available for Purchase';
+
+const statusIcons: Record<SupplyChainStatus, ReactNode> = {
   'Registered': <Tractor className="h-5 w-5" />,
   'In-Transit to Distributor': <Box className="h-5 w-5" />,
   'Received by Distributor': <Warehouse className="h-5 w-5" />,
@@ -15,15 +20,27 @@ const statusIcons: Record<SupplyChainStatus, React.ReactNode> = {
   'Available for Purchase': <CheckCircle className="h-5 w-5" />,
 };
 
-// Make sure this page is dynamically rendered
-export const dynamic = 'force-dynamic';
+const staticLot = {
+    id: "LOT-DEMO123",
+    produce_name: "Organic Gala Apples",
+    origin: "Sunny Orchard, WA",
+    farmer: { name: "John Appleseed" },
+    items_in_lot: 1000,
+    plantingDate: "2024-03-15",
+    harvestDate: "2024-09-01",
+    history: [
+        { status: 'Registered' as const, timestamp: "2024-09-01T08:00:00Z", location: "Sunny Orchard, WA", actor: "John Appleseed" },
+        { status: 'In-Transit to Distributor' as const, timestamp: "2024-09-02T10:00:00Z", location: "En route", actor: "John Appleseed" },
+        { status: 'Received by Distributor' as const, timestamp: "2024-09-03T11:00:00Z", location: "Distributor Hub", actor: "Fresh Produce Inc." },
+        { status: 'In-Transit to Retailer' as const, timestamp: "2024-09-04T09:00:00Z", location: "En route", actor: "Fresh Produce Inc." },
+        { status: 'Received by Retailer' as const, timestamp: "2024-09-04T14:00:00Z", location: "GrocerMart", actor: "GrocerMart Staff" },
+        { status: 'Available for Purchase' as const, timestamp: "2024-09-05T08:00:00Z", location: "GrocerMart", actor: "GrocerMart Staff" },
+    ]
+};
 
-export default async function TraceLotPage({ params }: { params: { lotId: string } }) {
-  const lot = await getLotById(params.lotId);
 
-  if (!lot) {
-    notFound();
-  }
+export default function TraceLotPage() {
+  const lot = staticLot;
 
   return (
     <div className="bg-muted/40">
