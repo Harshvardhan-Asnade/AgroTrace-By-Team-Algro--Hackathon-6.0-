@@ -37,16 +37,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       (event, session) => {
         setUser(session?.user ?? null);
         setLoading(false);
-        // Add a listener to refresh the page on sign-in or sign-out
-        // to ensure server components are re-rendered.
-        window.location.reload();
+        // On sign-in or sign-out, refresh the page to ensure server components are re-rendered.
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+            router.refresh();
+        }
       }
     );
 
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, [supabase, router]);
 
   const logout = async () => {
     await supabase.auth.signOut();
