@@ -8,7 +8,6 @@ import { createProduceLot, getLotsForFarmer, Lot } from '@/lib/database';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
@@ -38,10 +37,18 @@ export default function FarmerDashboard() {
   const [lots, setLots] = useState<Lot[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
   const { toast } = useToast();
   
   const form = useForm<ProduceFormValues>({
     resolver: zodResolver(produceSchema),
+    defaultValues: {
+      produce_name: '',
+      origin: '',
+      planting_date: '',
+      harvest_date: '',
+      items_in_lot: 100,
+    },
   });
 
   useEffect(() => {
@@ -65,14 +72,16 @@ export default function FarmerDashboard() {
   };
 
   useEffect(() => {
-    fetchFarmerLots();
+    if(user) {
+      fetchFarmerLots();
+    }
   }, [user]);
 
-  const handleRegisterProduce = async (values: ProduceFormValues) => {
+  const onSubmit = async (values: ProduceFormValues) => {
     if (!user) return;
     setIsSubmitting(true);
     
-    const lotData: Omit<Lot, 'id' | 'status' | 'history'> = {
+    const lotData: Omit<Lot, 'id' | 'status' | 'history' | 'created_at'> = {
       ...values,
       farmer_id: user.id,
     };
@@ -82,7 +91,7 @@ export default function FarmerDashboard() {
       toast({ title: 'Success', description: 'Produce batch registered successfully.' });
       setLots([newLot, ...lots]);
       form.reset();
-      // Close dialog if it's open
+      setOpenDialog(false);
     } else {
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to register produce.' });
     }
@@ -101,7 +110,7 @@ export default function FarmerDashboard() {
     const success = await updateLot(lotId, { status: 'In-Transit to Distributor' }, newHistoryEvent);
     if (success) {
       toast({ title: 'Lot Transferred!', description: 'Lot is now in transit to the distributor.' });
-      fetchFarmerLots(); // Re-fetch lots to update status
+      fetchFarmerLots();
     } else {
       toast({ variant: 'destructive', title: 'Update Failed', description: 'Could not update lot status.' });
     }
@@ -119,7 +128,7 @@ export default function FarmerDashboard() {
     <div className="container mx-auto py-10 px-4">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold font-headline">Farmer Dashboard</h1>
-        <Dialog>
+        <Dialog open={openDialog} onOpenChange={setOpenDialog}>
           <DialogTrigger asChild>
             <Button><PlusCircle className="mr-2" /> Register New Batch</Button>
           </DialogTrigger>
@@ -129,7 +138,7 @@ export default function FarmerDashboard() {
               <DialogDescription>Fill in the details below to create a new lot on the blockchain.</DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleRegisterProduce)} className="space-y-4">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField control={form.control} name="produce_name" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Produce Name</FormLabel>
@@ -174,7 +183,6 @@ export default function FarmerDashboard() {
         </Dialog>
       </div>
 
-      {/* Stats */}
       <div className="grid gap-4 md:grid-cols-3 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -205,7 +213,6 @@ export default function FarmerDashboard() {
         </Card>
       </div>
 
-      {/* Batches Table */}
       <Card>
         <CardHeader>
           <CardTitle>My Produce Batches</CardTitle>
@@ -226,7 +233,7 @@ export default function FarmerDashboard() {
               {lots.length > 0 ? (
                 lots.map((lot) => (
                   <TableRow key={lot.id}>
-                    <TableCell className="font-mono">{lot.id}</TableCell>
+                    <TableCell className="font-mono">{lot.id.substring(0, 8)}...</TableCell>
                     <TableCell>{lot.produce_name}</TableCell>
                     <TableCell>{lot.items_in_lot.toLocaleString()}</TableCell>
                     <TableCell>

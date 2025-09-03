@@ -14,8 +14,9 @@ export default function TracePage() {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const lotId = formData.get('lotId') as string;
-    // Since there is no database, we always redirect to the static demo page.
-    router.push(`/trace/LOT-DEMO123`);
+    if (lotId) {
+      router.push(`/trace/${lotId}`);
+    }
   };
 
   return (
@@ -24,13 +25,13 @@ export default function TracePage() {
         <CardHeader className="text-center">
           <ScanLine className="mx-auto h-12 w-12 text-primary mb-4" />
           <CardTitle className="text-3xl font-headline">Trace Your Produce</CardTitle>
-          <CardDescription>Enter any Lot ID to see a demonstration of its full journey.</CardDescription>
+          <CardDescription>Enter any Lot ID to see its journey from farm to table.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleTrace} className="flex flex-col sm:flex-row gap-4">
             <Input 
               name="lotId" 
-              placeholder="e.g., LOT-DEMO123" 
+              placeholder="Enter Lot ID..." 
               className="text-center text-lg h-12"
               required 
             />

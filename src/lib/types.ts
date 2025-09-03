@@ -24,6 +24,6 @@ export type ProduceLot = {
   planting_date: string;
   harvest_date: string;
   items_in_lot: number;
-  status: string; // Current status for quick filtering
+  status: string;
   history: HistoryEvent[];
 };

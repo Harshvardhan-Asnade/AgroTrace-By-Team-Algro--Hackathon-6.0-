@@ -4,25 +4,10 @@ import { supabase } from './supabaseClient';
 import type { ProduceLot } from './types';
 export type { ProduceLot as Lot };
 
-// Helper to force-refresh the schema cache.
-async function refreshSchemaCache() {
-  try {
-    const { error } = await supabase.rpc('pgrst_watch');
-    if (error) {
-      console.error('Error refreshing schema cache:', error);
-    } else {
-      console.log('Schema cache refreshed successfully.');
-    }
-  } catch(e) {
-    console.error('Caught error refreshing schema cache:', e);
-  }
-}
-
 // Function to get lots by their status
 export async function getLotsByStatus(status: string): Promise<ProduceLot[]> {
-  await refreshSchemaCache();
   const { data, error } = await supabase
-    .from('produce_batches')
+    .from('batches')
     .select('*')
     .eq('status', status);
 
@@ -35,9 +20,8 @@ export async function getLotsByStatus(status: string): Promise<ProduceLot[]> {
 
 // Function to get all lots for a specific farmer
 export async function getLotsForFarmer(farmerId: string): Promise<ProduceLot[]> {
-  await refreshSchemaCache();
   const { data, error } = await supabase
-    .from('produce_batches')
+    .from('batches')
     .select('*')
     .eq('farmer_id', farmerId)
     .order('created_at', { ascending: false });
@@ -52,7 +36,7 @@ export async function getLotsForFarmer(farmerId: string): Promise<ProduceLot[]> 
 // Function to get a single lot by its ID
 export async function getLotById(lotId: string): Promise<ProduceLot | null> {
   const { data, error } = await supabase
-    .from('produce_batches')
+    .from('batches')
     .select('*')
     .eq('id', lotId)
     .single();
@@ -70,11 +54,11 @@ export async function createProduceLot(lotData: Omit<ProduceLot, 'id' | 'status'
     status: 'Registered',
     timestamp: new Date().toISOString(),
     location: lotData.origin,
-    actor: 'system' // Or map farmerId to a name
+    actor: 'system'
   }];
 
   const { data, error } = await supabase
-    .from('produce_batches')
+    .from('batches')
     .insert([
       {
         ...lotData,
@@ -95,14 +79,13 @@ export async function createProduceLot(lotData: Omit<ProduceLot, 'id' | 'status'
 
 // Function to update a lot's status and history
 export async function updateLot(lotId: string, updates: Partial<ProduceLot>, newHistoryEvent: any): Promise<boolean> {
-  // First, fetch the current history
   const lot = await getLotById(lotId);
   if (!lot) return false;
 
   const updatedHistory = [...(lot.history || []), newHistoryEvent];
 
   const { error } = await supabase
-    .from('produce_batches')
+    .from('batches')
     .update({ ...updates, history: updatedHistory })
     .eq('id', lotId);
 

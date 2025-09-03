@@ -104,7 +104,7 @@ export default function DistributorDashboard() {
               {lots.length > 0 ? (
                 lots.map((lot) => (
                   <TableRow key={lot.id}>
-                    <TableCell className="font-mono">{lot.id}</TableCell>
+                    <TableCell className="font-mono">{lot.id.substring(0, 8)}...</TableCell>
                     <TableCell>{lot.produce_name}</TableCell>
                     <TableCell>{lot.items_in_lot.toLocaleString()}</TableCell>
                     <TableCell><Badge>{lot.status}</Badge></TableCell>
