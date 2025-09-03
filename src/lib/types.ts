@@ -1,3 +1,4 @@
+
 export type SupplyChainStatus =
   | 'Registered'
   | 'In-Transit to Distributor'
@@ -25,7 +26,6 @@ export type ProduceLot = {
     id: string;
     name: string;
   };
-  certificates: { name: string; url: string }[];
   history: SupplyChainEvent[];
 };
 

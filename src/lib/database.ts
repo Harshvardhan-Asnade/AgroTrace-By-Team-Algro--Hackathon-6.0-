@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import type { ProduceLot, SupplyChainEvent, SupplyChainStatus } from './types';
 import { revalidatePath } from 'next/cache';
 
-const LOT_COLUMNS = 'id, produce_name, origin, plantingDate, harvestDate, items_in_lot, farmer, certificates, history';
+const LOT_COLUMNS = 'id, produce_name, origin, plantingDate, harvestDate, items_in_lot, farmer, history';
 
 /**
  * Forces the Supabase PostgREST API to reload its schema cache.
@@ -83,12 +83,11 @@ const generateLotId = () => {
     return result;
 }
 
-export const createProduceLot = async (lotData: Omit<ProduceLot, 'id' | 'certificates'>) => {
+export const createProduceLot = async (lotData: Omit<ProduceLot, 'id'>) => {
     const newLotId = generateLotId();
     const fullLotData = {
         ...lotData,
         id: newLotId,
-        certificates: [],
     };
 
     console.log("Attempting to create produce lot with data:", fullLotData);

@@ -3,7 +3,7 @@
 import { getLotById } from '@/lib/database';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { notFound } from 'next/navigation';
-import { Tractor, Box, Warehouse, Store, CheckCircle, Calendar, Package, MapPin, FileText, User } from 'lucide-react';
+import { Tractor, Box, Warehouse, Store, CheckCircle, Calendar, Package, MapPin, User } from 'lucide-react';
 import type { SupplyChainStatus } from '@/lib/types';
 
 const statusIcons: Record<SupplyChainStatus, React.ReactNode> = {
@@ -39,9 +39,6 @@ export default async function TraceLotPage({ params }: { params: { lotId: string
             <div className="flex items-start gap-3"><Package className="text-primary h-5 w-5 mt-0.5"/> <div><p className="font-bold text-base">Lot Size</p><p className="text-muted-foreground">{lot.items_in_lot.toLocaleString()} items</p></div></div>
             <div className="flex items-start gap-3"><Calendar className="text-primary h-5 w-5 mt-0.5"/> <div><p className="font-bold text-base">Planted</p><p className="text-muted-foreground">{new Date(lot.plantingDate).toLocaleDateString()}</p></div></div>
             <div className="flex items-start gap-3"><Calendar className="text-primary h-5 w-5 mt-0.5"/> <div><p className="font-bold text-base">Harvested</p><p className="text-muted-foreground">{new Date(lot.harvestDate).toLocaleDateString()}</p></div></div>
-            {lot.certificates && lot.certificates.length > 0 && (
-              <div className="flex items-start gap-3"><FileText className="text-primary h-5 w-5 mt-0.5"/> <div><p className="font-bold text-base">Certificates</p><p className="text-muted-foreground">{lot.certificates.map(c => c.name).join(', ')}</p></div></div>
-            )}
           </CardContent>
         </Card>
         
