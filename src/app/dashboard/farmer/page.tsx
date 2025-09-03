@@ -123,23 +123,18 @@ export default function FarmerDashboard() {
       // 1. Blockchain Transaction (Simulated)
       const batchId = await mockMintBatch(values);
 
-
       // 2. Supabase DB Insert
       const lotData = {
         id: batchId,
         farmer_id: user.id,
-        produce_name: values.produce_name,
-        origin: values.origin,
-        planting_date: values.planting_date,
-        harvest_date: values.harvest_date,
-        items_in_lot: values.items_in_lot,
+        ...values,
       };
 
       const newLot = await createProduceLot(lotData);
 
       if (newLot) {
         toast({ title: 'Success', description: 'Produce batch registered on-chain and off-chain.' });
-        fetchFarmerLots(); // Refresh the list
+        await fetchFarmerLots(); // Refresh the list
         form.reset();
         setOpenDialog(false);
       } else {
@@ -148,10 +143,11 @@ export default function FarmerDashboard() {
       }
     } catch (error) {
        console.error("Error during batch registration:", error);
-       toast({ variant: 'destructive', title: 'Registration Error', description: 'Failed to register the produce batch. Check the console for details.' });
+       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+       toast({ variant: 'destructive', title: 'Registration Error', description: `Failed to register the produce batch. ${errorMessage}` });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsSubmitting(false);
   };
   
   const handleTransferToDistributor = async (lotId: string) => {

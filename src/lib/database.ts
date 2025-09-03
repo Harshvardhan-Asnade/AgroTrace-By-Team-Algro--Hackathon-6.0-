@@ -58,32 +58,39 @@ export async function createProduceLot(lotData: {
     harvest_date: string;
     items_in_lot: number;
 }): Promise<ProduceLot | null> {
-  const initialHistory = [{
-    status: 'Registered',
-    timestamp: new Date().toISOString(),
-    location: lotData.origin,
-    actor: lotData.farmer_id // Use farmer's ID as the initial actor
-  }];
+  try {
+    const initialHistory = [{
+      status: 'Registered',
+      timestamp: new Date().toISOString(),
+      location: lotData.origin,
+      actor: lotData.farmer_id // Use farmer's UUID as the initial actor
+    }];
 
-  const payload = {
-    ...lotData,
-    status: 'Registered',
-    history: initialHistory,
-  };
+    const payload = {
+      ...lotData,
+      status: 'Registered',
+      history: initialHistory,
+    };
 
-  const { data, error } = await supabase
-    .from('batches')
-    .insert([payload])
-    .select()
-    .single();
+    const { data, error } = await supabase
+      .from('batches')
+      .insert(payload) // insert the complete payload
+      .select()
+      .single();
 
-  if (error) {
-    // This will now log the specific Supabase error to the server console
-    console.error('Error creating produce lot in Supabase:', error.message);
-    return null;
+    if (error) {
+      // This will now log the specific Supabase error to the server console
+      console.error('Error creating produce lot in Supabase:', error.message);
+      // Re-throw the error so the calling function can catch it
+      throw new Error(`Database insert failed: ${error.message}`);
+    }
+    
+    return data;
+  } catch (err) {
+      console.error("Exception in createProduceLot:", err);
+      // Ensure any other exceptions are also propagated
+      throw err;
   }
-  
-  return data;
 }
 
 // Function to update a lot's status and history
