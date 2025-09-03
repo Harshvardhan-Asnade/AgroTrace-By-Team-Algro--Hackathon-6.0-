@@ -48,11 +48,11 @@ export default function Header() {
              <div className="flex items-center gap-2">
                 {address ? (
                    <Button variant="outline" onClick={disconnectWallet}>
-                     <Wallet className="mr-2" />
+                     <Wallet className="mr-2 h-4 w-4" />
                      {truncateAddress(address)}
                     </Button>
                 ) : (
-                  <Button variant="outline" onClick={connectWallet}><Wallet className="mr-2"/> Connect Wallet</Button>
+                  <Button variant="outline" onClick={connectWallet}><Wallet className="mr-2 h-4 w-4"/> Connect Wallet</Button>
                 )}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

@@ -121,10 +121,10 @@ export default function FarmerDashboard() {
 
 
       // 2. Supabase DB Insert
-      const lotData: Omit<Lot, 'status' | 'history' | 'created_at'> = {
+      const lotData = {
         id: batchId, // Use the ID from the blockchain
-        ...values,
         farmer_id: user.id,
+        ...values,
       };
 
       const newLot = await createProduceLot(lotData);
@@ -239,7 +239,7 @@ export default function FarmerDashboard() {
               {!walletAddress && (
                 <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed p-6 my-4 bg-muted/50">
                   <p className="text-muted-foreground text-center">Your wallet is not connected. Please connect it to proceed.</p>
-                  <Button onClick={connectWallet}><Wallet className="mr-2"/>Connect Wallet</Button>
+                  <Button onClick={connectWallet}><Wallet className="mr-2 h-4 w-4"/>Connect Wallet</Button>
                 </div>
               )}
               <Form {...form}>

@@ -49,7 +49,7 @@ export async function getLotById(lotId: string): Promise<ProduceLot | null> {
 }
 
 // Function to create a new produce lot
-export async function createProduceLot(lotData: Omit<ProduceLot, 'status' | 'history' | 'created_at'>): Promise<ProduceLot | null> {
+export async function createProduceLot(lotData: Omit<ProduceLot, 'status' | 'history' | 'created_at' | 'items_in_lot'> & { items_in_lot: number }): Promise<ProduceLot | null> {
   const initialHistory = [{
     status: 'Registered',
     timestamp: new Date().toISOString(),
