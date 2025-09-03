@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { supabase } from '@/lib/supabaseClient';
@@ -55,9 +56,20 @@ export const getLotsForFarmer = async (farmerId: string): Promise<ProduceLot[]> 
 
     if (error) {
         console.error('Error fetching farmer lots:', error);
-        // If we get a schema cache error, try to refresh it.
+        // If we get a schema cache error, try to refresh it and retry the query.
         if (error.code === 'PGRST205') {
             await refreshSchemaCache();
+            const { data: retryData, error: retryError } = await supabase
+                .from('produce_lots')
+                .select(LOT_COLUMNS)
+                .eq('farmer->>id', farmerId)
+                .order('harvestDate', { ascending: false });
+
+            if(retryError) {
+                 console.error('Error fetching farmer lots on retry:', retryError);
+                 return [];
+            }
+            return retryData || [];
         }
         return [];
     }
