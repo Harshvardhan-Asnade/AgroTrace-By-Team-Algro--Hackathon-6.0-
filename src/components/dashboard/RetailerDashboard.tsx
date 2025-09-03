@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { getLotsByStatus, updateLotHistory } from '@/lib/database';
-import type { ProduceLot } from '@/lib/types';
+import type { ProduceLot, SupplyChainEvent } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -41,14 +41,14 @@ export default function RetailerDashboard() {
   }, []);
 
   const handleUpdateStatus = async (lotId: string, newStatus: 'Received by Retailer' | 'Available for Purchase') => {
-    if (!user) return;
+    if (!user?.email) return;
     setUpdatingLot(lotId);
     try {
-      const newEvent = {
+      const newEvent: SupplyChainEvent = {
         status: newStatus,
         timestamp: new Date().toISOString(),
         location: 'Retail Store',
-        actor: user.email || 'Retailer',
+        actor: user.email,
       };
       const updatedLot = await updateLotHistory(lotId, newEvent);
 
@@ -65,16 +65,24 @@ export default function RetailerDashboard() {
           description: `Lot ${lotId} has been updated to "${newStatus}".`
         });
       }
-    } catch (error) {
+    } catch (error: any) {
        toast({
         variant: 'destructive',
         title: 'Update Failed',
-        description: `Could not update lot ${lotId}. Please try again.`,
+        description: error.message || `Could not update lot ${lotId}. Please try again.`,
       });
     } finally {
       setUpdatingLot(null);
     }
   };
+
+  const getPreviousActor = (lot: ProduceLot): string => {
+    const lastEvent = lot.history.slice(-1)[0];
+    if (lastEvent?.status === 'In-Transit to Retailer') {
+      return lastEvent.actor;
+    }
+    return 'Distributor'; // Fallback
+  }
   
   return (
     <div className="container mx-auto py-10 px-4 space-y-8">
@@ -99,7 +107,7 @@ export default function RetailerDashboard() {
                 {incomingShipments.length > 0 ? incomingShipments.map((lot) => (
                   <TableRow key={lot.id}>
                     <TableCell className="font-medium">{lot.id}</TableCell>
-                    <TableCell>{lot.history.find(h => h.status === 'In-Transit to Retailer')?.actor}</TableCell>
+                    <TableCell>{getPreviousActor(lot)}</TableCell>
                     <TableCell>{lot.name}</TableCell>
                     <TableCell className="text-right">
                       <Button onClick={() => handleUpdateStatus(lot.id, 'Received by Retailer')} disabled={updatingLot === lot.id}>

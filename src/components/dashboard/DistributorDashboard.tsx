@@ -37,14 +37,14 @@ export default function DistributorDashboard() {
   }, []);
 
   const handleUpdateStatus = async (lotId: string, newStatus: 'Received by Distributor' | 'In-Transit to Retailer') => {
-    if (!user) return;
+    if (!user?.email) return;
     setUpdatingLot(lotId);
     try {
       const newEvent = {
         status: newStatus,
         timestamp: new Date().toISOString(),
         location: newStatus === 'Received by Distributor' ? 'Distributor Hub' : 'En route to Retailer',
-        actor: user.email || 'Distributor',
+        actor: user.email,
       };
       const updatedLot = await updateLotHistory(lotId, newEvent);
 
@@ -61,11 +61,11 @@ export default function DistributorDashboard() {
           description: `Lot ${lotId} has been updated to "${newStatus}".`
         });
       }
-    } catch (error) {
+    } catch (error: any) {
        toast({
         variant: 'destructive',
         title: 'Update Failed',
-        description: `Could not update lot ${lotId}. Please try again.`,
+        description: error.message || `Could not update lot ${lotId}. Please try again.`,
       });
     } finally {
       setUpdatingLot(null);
