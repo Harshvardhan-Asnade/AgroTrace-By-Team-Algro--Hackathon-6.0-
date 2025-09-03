@@ -36,7 +36,7 @@ export default function LoginPage() {
       } else {
         toast({
           title: 'Login Successful',
-          description: 'Redirecting to your dashboard...',
+          description: 'Redirecting...',
         });
         // Redirect based on role
         const role = data.user?.user_metadata?.role;
@@ -46,6 +46,8 @@ export default function LoginPage() {
           router.push('/dashboard/distributor');
         } else if (role === 'retailer') {
           router.push('/dashboard/retailer');
+        } else if (role === 'customer') {
+          router.push('/trace');
         } else {
           router.push('/');
         }

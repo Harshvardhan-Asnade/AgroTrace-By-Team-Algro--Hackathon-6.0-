@@ -20,6 +20,8 @@ export default function DashboardPage() {
           router.replace('/dashboard/distributor');
         } else if (role === 'retailer') {
           router.replace('/dashboard/retailer');
+        } else if (role === 'customer') {
+          router.replace('/trace');
         } else {
           router.replace('/unauthorized');
         }

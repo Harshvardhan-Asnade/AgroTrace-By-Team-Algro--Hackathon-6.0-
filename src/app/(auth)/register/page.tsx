@@ -103,6 +103,7 @@ export default function RegisterPage() {
                     <SelectItem value="farmer">Farmer</SelectItem>
                     <SelectItem value="distributor">Distributor</SelectItem>
                     <SelectItem value="retailer">Retailer</SelectItem>
+                    <SelectItem value="customer">Customer</SelectItem>
                 </SelectContent>
               </Select>
             </div>
