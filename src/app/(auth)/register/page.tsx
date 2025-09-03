@@ -45,12 +45,33 @@ export default function RegisterPage() {
     });
 
     if (error) {
-      console.error("Registration error:", error);
-      toast({
-        variant: 'destructive',
-        title: 'Registration Failed',
-        description: error.message,
-      });
+      // Handle the specific case where the user exists but is unconfirmed
+      if (error.message.includes('user already registered')) {
+        const { error: resendError } = await supabase.auth.resend({
+          type: 'signup',
+          email: email,
+        });
+
+        if (resendError) {
+           toast({
+            variant: 'destructive',
+            title: 'Registration Failed',
+            description: resendError.message,
+          });
+        } else {
+           toast({
+            title: 'Confirmation Email Sent',
+            description: 'This email is already registered. We have sent a new confirmation link to your email address.',
+          });
+        }
+      } else {
+        console.error("Registration error:", error);
+        toast({
+          variant: 'destructive',
+          title: 'Registration Failed',
+          description: error.message,
+        });
+      }
       setLoading(false);
     } else if (data.user) {
         toast({
