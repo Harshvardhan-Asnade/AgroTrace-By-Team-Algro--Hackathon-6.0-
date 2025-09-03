@@ -5,10 +5,12 @@ import { supabase } from '@/lib/supabaseClient';
 import type { ProduceLot, SupplyChainEvent, SupplyChainStatus, Feedback } from './types';
 import { revalidatePath } from 'next/cache';
 
+const LOT_COLUMNS = 'id, name, origin, plantingDate, harvestDate, itemCount, farmer, certificates, history';
+
 export const getLotsByStatus = async (statuses: SupplyChainStatus[]): Promise<ProduceLot[]> => {
   const { data, error } = await supabase
     .from('produce_lots')
-    .select('*')
+    .select(LOT_COLUMNS)
     .order('harvestDate', { ascending: false });
 
   if (error) {
@@ -29,7 +31,7 @@ export const getLotsByStatus = async (statuses: SupplyChainStatus[]): Promise<Pr
 export const getLotsForFarmer = async (farmerId: string): Promise<ProduceLot[]> => {
     const { data, error } = await supabase
         .from('produce_lots')
-        .select('*')
+        .select(LOT_COLUMNS)
         .eq('farmer->>id', farmerId) 
         .order('harvestDate', { ascending: false });
 
@@ -44,7 +46,7 @@ export const getLotsForFarmer = async (farmerId: string): Promise<ProduceLot[]> 
 export const getLotById = async (id: string): Promise<ProduceLot | null> => {
   const { data, error } = await supabase
     .from('produce_lots')
-    .select('*')
+    .select(LOT_COLUMNS)
     .eq('id', id)
     .single();
 
