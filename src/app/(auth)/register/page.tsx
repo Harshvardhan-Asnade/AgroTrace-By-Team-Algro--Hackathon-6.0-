@@ -50,7 +50,17 @@ export default function RegisterPage() {
           description: error.message,
         });
       }
-    } else {
+    } else if (data.user && data.user.identities && data.user.identities.length === 0) {
+      // This case handles when a user is created but no confirmation email is sent.
+      // We can manually resend it.
+      await supabase.auth.resend({ type: 'signup', email: email });
+       toast({
+        title: 'Registration Almost Complete!',
+        description: "We've sent a confirmation link to your email. Please check your inbox to complete the process.",
+      });
+      router.push('/login');
+    }
+    else {
       toast({
         title: 'Registration Successful!',
         description: 'Please check your email to confirm your account.',
